@@ -1,0 +1,119 @@
+/* Human IS the Loop - deck theme tokens.
+   Palette follows the recipes4me app: deep green surfaces, lime accent, warm orb. */
+
+:root {
+  --bg: #0f1f19;
+  --bg-2: #132a21;
+  --surface: #1e4a3a;
+  --surface-2: #25584a;
+  --border: #2f6a57;
+  --accent: #b5e36b;
+  --accent-dim: #7fa84a;
+  --warm: #f2a65a;
+  --danger: #e5484d;
+  --info: #5ab4f2;
+  --ink: #eef5ef;
+  --ink-dim: #9fb8ad;
+  --ink-faint: #5f7d71;
+  --mono: 'JetBrains Mono', ui-monospace, monospace;
+}
+
+.slidev-layout {
+  background: radial-gradient(ellipse at 80% -10%, #1b3a2e 0%, var(--bg) 55%);
+  color: var(--ink);
+}
+
+.slidev-layout h1 {
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--ink);
+}
+
+.slidev-layout h1 + p {
+  opacity: 1;
+  color: var(--ink-dim);
+}
+
+.slidev-layout h2 {
+  color: var(--accent);
+  font-weight: 700;
+}
+
+.slidev-layout strong {
+  color: var(--accent);
+}
+
+.slidev-layout code:not(pre code) {
+  color: var(--accent);
+  background: rgba(181, 227, 107, 0.1);
+  padding: 0.05em 0.35em;
+  border-radius: 4px;
+}
+
+.slidev-layout pre.shiki,
+.slidev-code-wrapper pre {
+  background: #0a1612 !important;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+}
+
+.kicker {
+  font-family: var(--mono);
+  font-size: 0.75rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+.dim {
+  color: var(--ink-dim);
+}
+
+.accent {
+  color: var(--accent);
+}
+
+.warm {
+  color: var(--warm);
+}
+
+.danger {
+  color: var(--danger);
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35em;
+  font-family: var(--mono);
+  font-size: 0.7rem;
+  padding: 0.2em 0.65em;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--bg-2);
+  color: var(--ink-dim);
+}
+
+.card {
+  background: linear-gradient(180deg, var(--surface) 0%, var(--bg-2) 100%);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 1rem 1.2rem;
+}
+
+.placeholder {
+  border: 2px dashed var(--warm);
+  color: var(--warm);
+  border-radius: 12px;
+  padding: 0.8rem 1rem;
+  font-family: var(--mono);
+  font-size: 0.8rem;
+}
+
+.struck {
+  text-decoration: line-through;
+  text-decoration-color: var(--danger);
+  text-decoration-thickness: 3px;
+  color: var(--ink-faint);
+  transition: all 0.4s ease;
+}
