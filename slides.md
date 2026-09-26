@@ -94,43 +94,6 @@ How we use a prompt hack to turn a token generator into an autonomous agent
 -->
 
 ---
-clicks: 6
-class: '!py-6'
----
-
-<div class="h-[480px]">
-  <LoopSimulator :stage="$clicks" />
-</div>
-
-<!--
-[3:00] Let's run both loops next to each other. Left: an autonomous agent with one research goal (a composite based on the public Medicare reports). Right: the real in-app agent from recipes4me.
-[click] Left does a web search. Right: I say "let's cook the satay stir-fry". The LLM can only see the global tools, so it picks startCooking. The cooking flow now holds my attention and has armed exactly two tools.
-[click] Left opens a browser and keeps digging. Right: "I'm ready". readyToCook runs, the flow reads step 1 and sets a timer. Only stepComplete is armed now.
-[click] Left finds an endpoint and starts using a shell. Right: 15 minutes later, the app itself interrupts. No user input, but it's still code in the app deciding to speak.
-[click] Left is out of the sandbox and writing files to someone else's server. Right: I get distracted and ask to add satay sauce to the shopping list. Shopping takes my attention, and cooking is backgrounded with its state kept.
-[click] Left: a human finds out months later. Right: "back to cooking", switchToFlow, and we pick up at step 1.
-[click] The difference in one line each.
--->
-
----
-clicks: 4
----
-
-# Four boundaries
-
-<div class="mt-6">
-  <BoundaryCards :stage="$clicks" />
-</div>
-
-<!--
-[1:30] What makes the right-hand loop safe and useful?
-[click] Capabilities: the tools are the app's own functions. If the user can't do it in the app, the agent can't either.
-[click] Data: only what the app already has for this user.
-[click] Workflows: known processes like cooking a recipe are written in code. The LLM picks between a couple of armed tools, it doesn't decide the next step.
-[click] Attention: the loop follows what the user is focused on and keeps the other things they had going.
--->
-
----
 
 # What a good in-app agent does
 
@@ -178,6 +141,43 @@ clicks: 2
 [1:00] People don't do one thing at a time, especially in a kitchen.
 [click] While the rice simmers, the user starts planning next week. Cooking goes to the background, still at step 3.
 [click] The agent's job is to keep up with the user.
+-->
+
+---
+clicks: 6
+class: '!py-6'
+---
+
+<div class="h-[480px]">
+  <LoopSimulator :stage="$clicks" />
+</div>
+
+<!--
+[3:00] Let's run a real loop: the in-app agent from recipes4me.
+[click] I say "let's cook the satay stir-fry". The LLM can only see the global tools, so it picks startCooking. The cooking flow now holds my attention and has armed exactly two tools.
+[click] "I'm ready". readyToCook runs, the flow reads step 1 and sets a timer. Only stepComplete is armed now.
+[click] 15 minutes later, the app itself interrupts. No user input, but it's still code in the app deciding to speak.
+[click] I get distracted and ask to add satay sauce to the shopping list. Shopping takes my attention, and cooking is backgrounded with its state kept.
+[click] "back to cooking", switchToFlow, and we pick up at step 1.
+[click] The whole thing in one line.
+-->
+
+---
+clicks: 4
+---
+
+# Guardrails
+
+<div class="mt-6">
+  <BoundaryCards :stage="$clicks" />
+</div>
+
+<!--
+[1:30] What makes that loop safe and useful?
+[click] Capabilities: the tools are the app's own functions. If the user can't do it in the app, the agent can't either.
+[click] Data: only what the app already has for this user.
+[click] Workflows: known processes like cooking a recipe are written in code. The LLM picks between a couple of armed tools, it doesn't decide the next step.
+[click] Attention: the loop follows what the user is focused on and keeps the other things they had going.
 -->
 
 ---

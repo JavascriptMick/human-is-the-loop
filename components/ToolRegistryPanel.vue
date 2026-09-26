@@ -1,6 +1,6 @@
 <script setup lang="ts">
 // What the LLM is allowed to call this turn: global tools are always offered,
-// flow tools only while armed. Tool names are the real ones from recipes4me.
+// flow and system tools only while armed. Tool names are the real ones from recipes4me.
 const props = withDefaults(
   defineProps<{
     armed?: string[]
@@ -43,7 +43,7 @@ function state(tool: string, isGlobal = false) {
     <div class="group">
       <div class="label">system</div>
       <div class="tools">
-        <span v-for="t in system" :key="t" class="tool" :class="state(t, props.armed.includes('*system'))">{{ t }}</span>
+        <span v-for="t in system" :key="t" class="tool" :class="state(t)">{{ t }}</span>
       </div>
     </div>
   </div>
