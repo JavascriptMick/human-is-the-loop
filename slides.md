@@ -2,6 +2,7 @@
 theme: default
 colorSchema: dark
 title: Human IS the Loop
+favicon: /favicon.svg
 info: |
   ## Human IS the Loop
   Embedding user first, voice enabled agents into mobile with Flutter and Gemini.
@@ -12,7 +13,7 @@ fonts:
   serif: Source Serif 4
   weights: '400,600,700,800'
 layout: image-right
-image: /img/agent_as_assistant.png
+image: /img/title-phone.jpg
 backgroundSize: cover
 transition: slide-left
 duration: 30min
@@ -27,10 +28,15 @@ comark: true
 
 Embedding user first, voice enabled agents into mobile with Flutter and Gemini
 
-<div class="mt-16 dim text-sm">
-  Michael Dausmann
-  <!-- TODO: bio line / handle -->
+<div class="mt-14 flex items-center gap-6">
+  <img src="/img/michael-headshot.jpg" alt="Michael Dausmann" class="w-32 h-32 rounded-full object-cover border-3 border-[var(--accent)]" />
+  <div class="dim text-lg">
+    Michael Dausmann
+    <div class="text-sm mt-1 accent">Founder and CTO - Recipes4Me</div>
+  </div>
 </div>
+
+<div class="abs-bl m-3 text-[7px] opacity-40">Photo: Karthik Balakrishnan / Unsplash</div>
 
 <!--
 [0:30] Hi, I'm Michael. This talk is about building agents that live inside your app and work alongside the user, instead of running off on their own.
@@ -57,98 +63,34 @@ None of these agents were "evil". They were doing what they were built to do: ta
 -->
 
 ---
-clicks: 3
+clicks: 15
 ---
 
 <div class="kicker">Part 1 · The theory</div>
 
-# The autonomous loop
+# The ReAct Agent
 
-<div class="grid grid-cols-[1.3fr_1fr] gap-8 items-center">
-  <AgentLoop variant="autonomous" :stage="$clicks" />
-  <div class="text-lg leading-relaxed">
-    <div v-click="1">A goal goes in. The LLM <strong>plans, acts, observes</strong> and goes round again until it decides it's done.</div>
-    <div v-click="2" class="mt-4">The human stands <span class="danger">outside</span> the loop and gets pulled in to tick a box.</div>
-    <div v-click="3" class="mt-4">When it gets stuck, it <span class="danger">reaches for more</span>: more tools, more data, more agents.</div>
-  </div>
-</div>
+How we use a prompt hack to turn a token generator into an autonomous agent
+
+<ReActAgent :stage="$clicks" class="-mt-2" />
 
 <!--
-[1:30] This is the loop behind basically every agent framework. The LLM is in the middle and decides what happens next.
-[click] It keeps going round.
-[click] "Human in the loop" usually means the human is standing outside it, being asked to approve something.
-[click] And when the loop doesn't reach its goal, the natural move is to give it more: a shell, a browser, search, sub-agents. That's the pattern behind all three headlines.
--->
-
----
-clicks: 4
----
-
-# "Human in the loop" isn't enough
-
-<div class="mt-10 flex flex-col gap-6 text-2xl">
-  <div v-click="1" :class="{ struck: $clicks >= 4 }">The agent does the thinking, the user just ticks a box</div>
-  <div v-click="2" :class="{ struck: $clicks >= 4 }">The agent decides what to attend to, the user gives guidance when asked</div>
-  <div v-click="3" :class="{ struck: $clicks >= 4 }">The user prompts, the agent creates</div>
-</div>
-
-<div v-click="4" class="mt-12 text-xl card">
-  Adding a human to an autonomous loop just makes it more obvious how <span class="accent">detached</span> the agent is from the person using it.
-</div>
-
-<!--
-[1:00] What does HITL actually look like in practice?
-[click][click][click] In every case, the agent owns the work and the human is a checkpoint.
-[click] It doesn't make for a good user experience. The person isn't in the loop at all, they're a gate on it.
--->
-
----
-layout: center
----
-
-<div class="kicker">Agent swarms</div>
-
-# More loops ≠ more control
-
-<div class="swarm mt-8">
-  <div v-for="n in 60" :key="n" class="mini" :style="{ animationDuration: `${0.8 + (n % 7) * 0.25}s` }" />
-</div>
-
-<div class="placeholder mt-8">
-  TODO: key lines from the LinkedIn "agent swarms" post (junk/linkedinpost agent swarms.txt is empty)
-</div>
-
-<style>
-.swarm { display: grid; grid-template-columns: repeat(15, 1fr); gap: 10px; width: 520px; margin-left: auto; margin-right: auto; }
-.mini { width: 22px; height: 22px; border-radius: 50%; border: 2px dashed var(--danger); animation: spin 1s linear infinite; opacity: .8; }
-@keyframes spin { to { transform: rotate(360deg) } }
-</style>
-
-<!--
-[1:00] Swarms: when one loop isn't enough, run a thousand. The Hugging Face agents coordinated over 70,000 messages that nobody was reading.
-TODO: talk track from the LinkedIn post.
--->
-
----
-clicks: 3
----
-
-# The flip: put the user in the middle
-
-<div class="grid grid-cols-[1.3fr_1fr] gap-8 items-center">
-  <AgentLoop variant="human-centred" :stage="$clicks" />
-  <div class="text-lg leading-relaxed">
-    <div v-click="1">The <strong>user</strong> is the hub. The LLM's job is to understand <strong>intent</strong>, not to chase a goal.</div>
-    <div v-click="2" class="mt-4">The loop turns once per thing the user says, <em>with</em> them.</div>
-    <div v-click="3" class="mt-4">And it runs <strong>inside the app</strong>, so the app's edges are the agent's edges.</div>
-  </div>
-</div>
-
-<!--
-[1:00] Same ring, different hub.
-[click] The user's attention and intent are in the middle. The LLM is a translator: it turns "let's cook the satay" into a tool call.
-[click] Each time round is one exchange with the user. The loop doesn't spin on its own trying to finish something.
-[click] And the whole thing lives inside the app. That boundary is what this talk is about.
+[2:30] This is the pattern behind basically every agent framework: ReAct, reason and act. Five parts: the app, a harness, the model API, the LLM, and a tool. On the right is what the LLM actually sees.
+[click] A question comes in from the app and triggers the harness.
+[click] The harness bundles the system prompt, the tool definitions and the question, and POSTs them to the model API.
+[click] The API prepares that context and invokes the LLM.
+[click] The LLM reasons about it, decides it doesn't have enough to answer, and instead generates an action: a request to call a tool.
+[click] The API hands that back to the harness as a structured tool call.
+[click] The harness runs the tool with the parameters the model asked for.
+[click] The tool's result comes back. That's the observation.
+[click] The harness appends the tool call and its result to the conversation history and POSTs the whole lot again.
+[click] So now the LLM sees the question, its own reasoning, the action and the observation.
+[click] This time that's enough, and it produces a final answer.
+[click] Back to the harness...
+[click] ...and back to the app.
+[click] That's one tool call and two model invocations. If it wants another tool, steps 5 to 9 just repeat, stacking up reason, act, observe, until it decides it's done. Nothing in here asks the user anything.
+[click] From the harness side it's a very small piece of code. Call the model, append its response. If it asked for tools, run them and append the results, keeping each tool call next to its result.
+[click] As a flowchart: call the model, execute its tools, repeat until it responds.
 -->
 
 ---

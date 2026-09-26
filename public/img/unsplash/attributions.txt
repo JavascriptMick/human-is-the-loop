@@ -1,0 +1,12 @@
+
+Man and Woman in kitchen looking at phone
+dist/img/vitaly-gariev-N0KIyPiAkkY-unsplash.jpg
+Photo by <a href="https://unsplash.com/@silverkblack?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText">Vitaly Gariev</a> on <a href="https://unsplash.com/photos/couple-looking-at-phone-in-a-bright-kitchen-N0KIyPiAkkY?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText">Unsplash</a>
+
+GrandMa and GrandDaughter in kitchen with phone
+dist/img/vitaly-gariev-mS3S7HQnHPo-unsplash.jpg
+Photo by <a href="https://unsplash.com/@silverkblack?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText">Vitaly Gariev</a> on <a href="https://unsplash.com/photos/grandmother-and-granddaughter-preparing-food-in-kitchen-mS3S7HQnHPo?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText">Unsplash</a>
+
+Man and Woman look at phone
+dist/img/karthik-balakrishnan-Y4zNMW3pQAs-unsplash.jpg
+Photo by <a href="https://unsplash.com/@karthikb351?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText">Karthik Balakrishnan</a> on <a href="https://unsplash.com/photos/man-and-woman-laughing-at-smartphone-Y4zNMW3pQAs?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText">Unsplash</a>

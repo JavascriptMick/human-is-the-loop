@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <!-- Human IS the Loop: two loops (agent + user) meeting at a single point -->
+  <g fill="none" stroke-width="6.5" stroke-linejoin="round">
+    <path d="M 32 32 L 26.6 24.8 A 12 12 0 1 0 26.6 39.2 Z" stroke="#24eac5"/>
+    <path d="M 32 32 L 37.4 24.8 A 12 12 0 1 1 37.4 39.2 Z" stroke="#8e44fb"/>
+  </g>
+  <circle cx="32" cy="32" r="4.8" fill="#faf9f6"/>
+</svg>

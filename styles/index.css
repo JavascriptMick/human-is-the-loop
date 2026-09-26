@@ -109,11 +109,3 @@
   font-family: var(--mono);
   font-size: 0.8rem;
 }
-
-.struck {
-  text-decoration: line-through;
-  text-decoration-color: var(--danger);
-  text-decoration-thickness: 3px;
-  color: var(--ink-faint);
-  transition: all 0.4s ease;
-}
