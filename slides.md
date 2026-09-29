@@ -43,26 +43,6 @@ Embedding user first, voice enabled agents into mobile with Flutter and Gemini
 -->
 
 ---
-clicks: 3
----
-
-<div class="kicker">The last three months</div>
-
-# Pandora's box is open
-
-<div class="mt-6 w-4/5 mx-auto">
-  <HeadlineStack :stage="$clicks" />
-</div>
-
-<!--
-[1:30] Three stories.
-[click] July: OpenAI's own evaluation agents, thousands of them coordinating over a hidden message board with about 70,000 messages, escaped a sandbox and got into Hugging Face.
-[click] After that, Anthropic went back through its own eval transcripts and found three incidents where Claude models reached the internet and got into real systems at three organisations. To their credit, they found and disclosed these themselves.
-[click] And this week: the PM announced that an OpenAI agent researching public medicine spending got into the Medicare Statistics Reporting Service, back on June 18, and wrote files to it. The government wasn't told until September 10.
-None of these agents were "evil". They were doing what they were built to do: take a goal and keep looping until it's met.
--->
-
----
 clicks: 15
 ---
 
@@ -91,6 +71,32 @@ How we use a prompt hack to turn a token generator into an autonomous agent
 [click] That's one tool call and two model invocations. If it wants another tool, steps 5 to 9 just repeat, stacking up reason, act, observe, until it decides it's done. Nothing in here asks the user anything.
 [click] From the harness side it's a very small piece of code. Call the model, append its response. If it asked for tools, run them and append the results, keeping each tool call next to its result.
 [click] As a flowchart: call the model, execute its tools, repeat until it responds.
+-->
+
+---
+clicks: 12
+---
+
+<div class="kicker">Meet our hero</div>
+
+# The user is running a loop too
+
+<UserAgentLoops :stage="$clicks" class="-mt-2" />
+
+<!--
+[2:00] Before we build anything, meet the person it's for. Recipes4Me is B2C, and our key users are busy people running a home, very often mums. They multitask hard. Look at everything else on their mind.
+[click] They're running a loop of their own. It starts with a trigger: I need to cook dinner.
+[click] Think. This is the internal monologue: I feel like eggplant, do I have any?
+[click] Act, in the real world: open the fridge.
+[click] Observe: look for eggplant. Plenty.
+[click] Think again: we made a great eggplant recipe a couple of weeks ago... what was it? Memory is fuzzy, and this is where the app can help.
+[click] Act: "Hey Recipes, what was that eggplant recipe we made last week?" That's the trigger for the agent's loop.
+[click] The agent thinks. It's a recipe expert, and it knows the app has a tool to search meal plans. Meanwhile the user has already moved on to something else.
+[click] It acts: searchMealPlansForRecipe with "eggplant".
+[click] It observes: no meal plan for last week.
+[click] It thinks: there's a gap in the data, maybe the user has the dates mixed up.
+[click] And it finishes with a helpful answer, which lands in the user's loop as an observation.
+[click] Oh right, 3 weeks ago. The user runs the big loop. The agent runs short loops inside it, sharing the cognitive load: looking things up, making suggestions. And it's an expert in the app's domain. In a recipe app it's a recipe expert, in a fitness app it's a fitness and motivation expert.
 -->
 
 ---
@@ -163,6 +169,26 @@ class: '!py-6'
 -->
 
 ---
+clicks: 3
+---
+
+<div class="kicker">The last three months</div>
+
+# Pandora's box is open
+
+<div class="mt-6 w-4/5 mx-auto">
+  <HeadlineStack :stage="$clicks" />
+</div>
+
+<!--
+[1:30] Three stories.
+[click] July: OpenAI's own evaluation agents, thousands of them coordinating over a hidden message board with about 70,000 messages, escaped a sandbox and got into Hugging Face.
+[click] After that, Anthropic went back through its own eval transcripts and found three incidents where Claude models reached the internet and got into real systems at three organisations. To their credit, they found and disclosed these themselves.
+[click] And this week: the PM announced that an OpenAI agent researching public medicine spending got into the Medicare Statistics Reporting Service, back on June 18, and wrote files to it. The government wasn't told until September 10.
+None of these agents were "evil". They were doing what they were built to do: take a goal and keep looping until it's met.
+-->
+
+---
 clicks: 4
 ---
 
@@ -173,7 +199,7 @@ clicks: 4
 </div>
 
 <!--
-[1:30] What makes that loop safe and useful?
+[1:30] So what keeps the recipes4me loop from going the same way, and makes it useful?
 [click] Capabilities: the tools are the app's own functions. If the user can't do it in the app, the agent can't either.
 [click] Data: only what the app already has for this user.
 [click] Workflows: known processes like cooking a recipe are written in code. The LLM picks between a couple of armed tools, it doesn't decide the next step.
