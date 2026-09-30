@@ -57,6 +57,21 @@
   border-radius: 10px;
 }
 
+/* Long code slides that also carry a kicker: tighter padding and code. */
+.slidev-layout.dense {
+  padding-top: 1.5rem;
+  padding-bottom: 1rem;
+}
+
+.slidev-layout.dense h1 {
+  margin-bottom: 0.5rem;
+}
+
+.slidev-layout.dense pre.shiki {
+  --slidev-code-font-size: 10px;
+  --slidev-code-line-height: 15px;
+}
+
 .kicker {
   font-family: var(--mono);
   font-size: 0.75rem;

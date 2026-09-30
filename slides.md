@@ -39,38 +39,164 @@ Embedding user first, voice enabled agents into mobile with Flutter and Gemini
 <div class="abs-bl m-3 text-[7px] opacity-40">Photo: Karthik Balakrishnan / Unsplash</div>
 
 <!--
-[0:30] Hi, I'm Michael. This talk is about building agents that live inside your app and work alongside the user, instead of running off on their own.
+[0:30] Hi, I'm Michael. This talk is about building agents that live inside your app and work alongside the user, instead of running off on their own. But first, three stories from the last three months.
+-->
+
+---
+clicks: 3
+---
+
+<div class="kicker">The last three months</div>
+
+# Pandora's box is open
+
+<div class="mt-6 w-4/5 mx-auto">
+  <HeadlineStack :stage="$clicks" />
+</div>
+
+<!--
+[1:15]
+[click] July: OpenAI's own evaluation agents, thousands of them coordinating over a hidden message board with about 70,000 messages, escaped a sandbox and got into Hugging Face.
+[click] Anthropic went back through its own eval transcripts and found three incidents where Claude models reached the internet and got into real systems at three organisations. To their credit, they found and disclosed these themselves.
+[click] And this week: an OpenAI agent researching public medicine spending got into the Medicare Statistics Reporting Service back in June and wrote files to it. The government wasn't told until September 10.
+None of these agents were "evil". They did what they were built to do: take a goal and keep looping until it's met. Nobody was in their loop.
+-->
+
+---
+clicks: 2
+---
+
+# "Human in the loop" isn't the fix
+
+<div class="grid grid-cols-2 gap-6 mt-8">
+  <div class="card">
+    <div class="kicker danger">Human in the loop</div>
+    <div class="mt-1 dim text-sm">The agent owns the loop. The user is a checkpoint.</div>
+    <ul class="mt-4 leading-relaxed">
+      <li>The agent does the thinking, the user ticks a box</li>
+      <li>The agent decides what to attend to, the user steps in when asked</li>
+      <li>The user prompts, the agent goes off and creates</li>
+    </ul>
+  </div>
+  <div v-click="1" class="card">
+    <div class="kicker">Human <span class="accent">IS</span> the loop</div>
+    <div class="mt-1 dim text-sm">The user owns the loop. The agent runs short loops inside it.</div>
+    <ul class="mt-4 leading-relaxed">
+      <li>The agent follows what the user is focused on</li>
+      <li>It works through the app's own tools and screens</li>
+      <li>It shares the cognitive load, then gets out of the way</li>
+    </ul>
+  </div>
+</div>
+
+<div v-click="2" class="mt-10 text-2xl text-center">
+  The agent's loop runs <strong class="accent">inside</strong> the user's loop. Not the other way round.
+</div>
+
+<!--
+[1:00] The usual answer is "put a human in the loop". But that keeps the agent in charge: it thinks, it decides, and every so often the user gets asked to approve something. That's a worse experience, not a better one.
+[click] Flip it. The user is already running a loop, their day. The agent should run inside that, helping with one step at a time.
+[click] That's what the title means. The human isn't a checkpoint on the agent's loop. The human IS the loop.
+-->
+
+---
+
+# Where we're going
+
+<div class="grid grid-cols-3 gap-5 mt-10">
+  <div class="card">
+    <div class="kicker">See it</div>
+    <div class="text-xl font-700 mt-2">A real in-app agent</div>
+    <div class="mt-2 dim">recipes4me: hands-free cooking, shopping and meal planning by voice</div>
+  </div>
+  <div class="card">
+    <div class="kicker">Part 1 · The idea</div>
+    <div class="text-xl font-700 mt-2">Two loops, four rules</div>
+    <div class="mt-2 dim">How the agent's loop fits inside the user's, and what keeps it there</div>
+  </div>
+  <div class="card">
+    <div class="kicker">Part 2 · The code</div>
+    <div class="text-xl font-700 mt-2">Flutter · Signals · Gemini</div>
+    <div class="mt-2 dim">Real Dart from a shipping app: tools, flows, attention, voice</div>
+  </div>
+</div>
+
+<div class="mt-10 text-center text-lg">
+  You'll leave with a pattern that runs on <strong class="accent">flash-lite</strong>, with 2-6 tools per turn.
+</div>
+
+<!--
+[0:30] Here's the plan. First I'll show you the thing working. Then the idea: two loops and four rules. Then the code. And the payoff: this runs on a small, cheap model, because the model only ever sees a handful of tools.
+-->
+
+---
+layout: center
+---
+
+<div class="grid grid-cols-[auto_1fr] gap-12 items-center">
+  <PhoneFrame src="/img/agent_chat_slide_menu.png" :width="200" caption="demo video goes here" />
+  <div>
+    <div class="kicker">Demo</div>
+    <h1>Cooking with recipes4me</h1>
+    <div class="placeholder mt-6">
+      TODO: record the cooking flow and drop it in as public/video/demo.mp4,<br />
+      then swap to &lt;PhoneFrame src="/video/demo.mp4" video /&gt;
+    </div>
+    <ul class="mt-6 dim">
+      <li>"Cook this recipe?" contextual launch</li>
+      <li>voice: ingredients → steps → timer interrupt</li>
+      <li>switch to shopping and back</li>
+    </ul>
+  </div>
+</div>
+
+<!--
+[2:30] Recorded demo. Point out: the screen follows the agent (the router and signals move), the flow chip, the timer interrupt, switching away and back. Remember that switch: we'll replay it from the agent's side in a few minutes.
+-->
+
+---
+layout: center
+---
+
+<SectionCard
+  kicker="Part 1"
+  title="Two loops, four rules"
+  subtitle="Why the agent belongs inside the user's loop"
+/>
+
+<!--
+[0:10] So how does that work? Start with the loop every agent runs.
 -->
 
 ---
 clicks: 15
 ---
 
-<div class="kicker">Part 1 · The theory</div>
+<div class="kicker">The agent's loop</div>
 
-# The ReAct Agent
+# Every agent is this loop
 
 How we use a prompt hack to turn a token generator into an autonomous agent
 
 <ReActAgent :stage="$clicks" class="-mt-2" />
 
 <!--
-[2:30] This is the pattern behind basically every agent framework: ReAct, reason and act. Five parts: the app, a harness, the model API, the LLM, and a tool. On the right is what the LLM actually sees.
-[click] A question comes in from the app and triggers the harness.
-[click] The harness bundles the system prompt, the tool definitions and the question, and POSTs them to the model API.
-[click] The API prepares that context and invokes the LLM.
-[click] The LLM reasons about it, decides it doesn't have enough to answer, and instead generates an action: a request to call a tool.
-[click] The API hands that back to the harness as a structured tool call.
-[click] The harness runs the tool with the parameters the model asked for.
-[click] The tool's result comes back. That's the observation.
-[click] The harness appends the tool call and its result to the conversation history and POSTs the whole lot again.
-[click] So now the LLM sees the question, its own reasoning, the action and the observation.
-[click] This time that's enough, and it produces a final answer.
+[1:30] ReAct, reason and act. The pattern behind basically every agent framework, including the ones in those headlines. Five parts: app, harness, model API, LLM, tool. On the right is what the LLM actually sees.
+[click] A question comes in from the app.
+[click] The harness POSTs system prompt, tool definitions and the question.
+[click] The API invokes the LLM.
+[click] It reasons, and decides it needs a tool.
+[click] That comes back as a structured tool call...
+[click] ...the harness runs it...
+[click] ...and gets an observation.
+[click] Append it all and POST again.
+[click] Now the LLM sees question, reasoning, action and observation.
+[click] Enough to answer.
 [click] Back to the harness...
 [click] ...and back to the app.
-[click] That's one tool call and two model invocations. If it wants another tool, steps 5 to 9 just repeat, stacking up reason, act, observe, until it decides it's done. Nothing in here asks the user anything.
-[click] From the harness side it's a very small piece of code. Call the model, append its response. If it asked for tools, run them and append the results, keeping each tool call next to its result.
-[click] As a flowchart: call the model, execute its tools, repeat until it responds.
+[click] If it wants more tools, steps 5 to 9 repeat until it decides it's done. Nothing in here asks the user anything.
+[click] From the harness side it's tiny: call the model, run its tools, append.
+[click] Call, execute, repeat until it responds.
 -->
 
 ---
@@ -84,41 +210,46 @@ clicks: 12
 <UserAgentLoops :stage="$clicks" class="-mt-2" />
 
 <!--
-[2:00] Before we build anything, meet the person it's for. Recipes4Me is B2C, and our key users are busy people running a home, very often mums. They multitask hard. Look at everything else on their mind.
-[click] They're running a loop of their own. It starts with a trigger: I need to cook dinner.
-[click] Think. This is the internal monologue: I feel like eggplant, do I have any?
+[1:45] Now meet the person it's for. Recipes4Me is B2C, and our key users are busy people running a home, very often mums. They multitask hard. Look at everything else on their mind.
+[click] They're running a loop of their own. Trigger: I need to cook dinner.
+[click] Think: I feel like eggplant, do I have any?
 [click] Act, in the real world: open the fridge.
-[click] Observe: look for eggplant. Plenty.
-[click] Think again: we made a great eggplant recipe a couple of weeks ago... what was it? Memory is fuzzy, and this is where the app can help.
+[click] Observe: plenty of eggplant.
+[click] Think: we made a great eggplant recipe a couple of weeks ago... what was it? Memory is fuzzy, and this is where the app can help.
 [click] Act: "Hey Recipes, what was that eggplant recipe we made last week?" That's the trigger for the agent's loop.
-[click] The agent thinks. It's a recipe expert, and it knows the app has a tool to search meal plans. Meanwhile the user has already moved on to something else.
+[click] The agent thinks. It's a recipe expert, and it knows there's a tool to search meal plans. Meanwhile the user has moved on.
 [click] It acts: searchMealPlansForRecipe with "eggplant".
 [click] It observes: no meal plan for last week.
-[click] It thinks: there's a gap in the data, maybe the user has the dates mixed up.
+[click] It thinks: maybe the user has the dates mixed up.
 [click] And it finishes with a helpful answer, which lands in the user's loop as an observation.
-[click] Oh right, 3 weeks ago. The user runs the big loop. The agent runs short loops inside it, sharing the cognitive load: looking things up, making suggestions. And it's an expert in the app's domain. In a recipe app it's a recipe expert, in a fitness app it's a fitness and motivation expert.
+[click] Oh right, 3 weeks ago. The user runs the big loop. The agent runs short loops inside it, sharing the cognitive load, as an expert in the app's domain.
 -->
 
 ---
+clicks: 4
+---
 
-# What a good in-app agent does
+# Four rules keep the agent inside the user's loop
 
-<div class="grid grid-cols-2 gap-5 mt-8">
-  <div v-click class="card"><div class="kicker">Intent</div><div class="mt-2">Understands the problem the user is trying to solve right now.</div></div>
-  <div v-click class="card"><div class="kicker">Context switching</div><div class="mt-2">Follows the user's attention when it moves, and remembers where they were.</div></div>
-  <div v-click class="card"><div class="kicker">Domain workflows</div><div class="mt-2">Knows the processes in its domain: planning, shopping, cooking.</div></div>
-  <div v-click class="card"><div class="kicker">Same surfaces</div><div class="mt-2">Uses the same state, tools and routes the user does, and shows its work on screen.</div></div>
+<div class="mt-6">
+  <BoundaryCards :stage="$clicks" />
 </div>
 
 <!--
-[1:00] From the abstract, four things. Everything in part 2 maps onto one of these.
+[1:30] So what keeps the recipes4me loop from going the way of those headlines, and makes it useful at the same time? Four rules. Everything in part 2 is labelled with one of these.
+[click] Bounded by the app: the tools are the app's own functions, over the app's data, driving the same screens. If the user can't do it in the app, the agent can't either.
+[click] Workflows in code: known processes like cooking a recipe are written in code. The LLM doesn't decide the next step.
+[click] Arm and gate: the LLM only sees a couple of tools at a time, and anything else is rejected.
+[click] Follow attention: the loop follows what the user is focused on and keeps the other things they had going. Let's look at that one.
 -->
 
 ---
 clicks: 2
 ---
 
-# Attention: what does the user need <span class="accent">now</span>?
+<div class="kicker">Rule 4 · Follow attention</div>
+
+# What does the user need <span class="accent">now</span>?
 
 <div class="grid grid-cols-[1fr_1.1fr] gap-10 mt-6 items-start">
   <div class="text-lg leading-relaxed">
@@ -154,81 +285,20 @@ clicks: 6
 class: '!py-6'
 ---
 
-<div class="h-[480px]">
+<h2 class="!mb-2 !font-800" style="color: var(--ink)">The demo, from the agent's side</h2>
+
+<div class="h-[440px]">
   <LoopSimulator :stage="$clicks" />
 </div>
 
 <!--
-[3:00] Let's run a real loop: the in-app agent from recipes4me.
-[click] I say "let's cook the satay stir-fry". The LLM can only see the global tools, so it picks startCooking. The cooking flow now holds my attention and has armed exactly two tools.
+[2:30] Let's replay the demo from the agent's side.
+[click] "let's cook the satay stir-fry". The LLM can only see the global tools, so it picks startCooking. The cooking flow now holds attention and has armed exactly two tools.
 [click] "I'm ready". readyToCook runs, the flow reads step 1 and sets a timer. Only stepComplete is armed now.
 [click] 15 minutes later, the app itself interrupts. No user input, but it's still code in the app deciding to speak.
 [click] I get distracted and ask to add satay sauce to the shopping list. Shopping takes my attention, and cooking is backgrounded with its state kept.
 [click] "back to cooking", switchToFlow, and we pick up at step 1.
-[click] The whole thing in one line.
--->
-
----
-clicks: 3
----
-
-<div class="kicker">The last three months</div>
-
-# Pandora's box is open
-
-<div class="mt-6 w-4/5 mx-auto">
-  <HeadlineStack :stage="$clicks" />
-</div>
-
-<!--
-[1:30] Three stories.
-[click] July: OpenAI's own evaluation agents, thousands of them coordinating over a hidden message board with about 70,000 messages, escaped a sandbox and got into Hugging Face.
-[click] After that, Anthropic went back through its own eval transcripts and found three incidents where Claude models reached the internet and got into real systems at three organisations. To their credit, they found and disclosed these themselves.
-[click] And this week: the PM announced that an OpenAI agent researching public medicine spending got into the Medicare Statistics Reporting Service, back on June 18, and wrote files to it. The government wasn't told until September 10.
-None of these agents were "evil". They were doing what they were built to do: take a goal and keep looping until it's met.
--->
-
----
-clicks: 4
----
-
-# Guardrails
-
-<div class="mt-6">
-  <BoundaryCards :stage="$clicks" />
-</div>
-
-<!--
-[1:30] So what keeps the recipes4me loop from going the same way, and makes it useful?
-[click] Capabilities: the tools are the app's own functions. If the user can't do it in the app, the agent can't either.
-[click] Data: only what the app already has for this user.
-[click] Workflows: known processes like cooking a recipe are written in code. The LLM picks between a couple of armed tools, it doesn't decide the next step.
-[click] Attention: the loop follows what the user is focused on and keeps the other things they had going.
--->
-
----
-layout: center
----
-
-<div class="grid grid-cols-[auto_1fr] gap-12 items-center">
-  <PhoneFrame src="/img/agent_chat_slide_menu.png" :width="200" caption="demo video goes here" />
-  <div>
-    <div class="kicker">Demo</div>
-    <h1>Cooking with recipes4me</h1>
-    <div class="placeholder mt-6">
-      TODO: record the cooking flow and drop it in as public/video/demo.mp4,<br />
-      then swap to &lt;PhoneFrame src="/video/demo.mp4" video /&gt;
-    </div>
-    <ul class="mt-6 dim">
-      <li>"Cook this recipe?" contextual launch</li>
-      <li>voice: ingredients → steps → timer interrupt</li>
-      <li>switch to shopping and back</li>
-    </ul>
-  </div>
-</div>
-
-<!--
-[2:30] Recorded demo. Point out: the screen follows the agent (the router and signals move), the flow chip, the timer interrupt, switching away and back.
+[click] The whole thing in one line. All four rules are in there. Now let's see how it's built.
 -->
 
 ---
@@ -237,24 +307,26 @@ layout: center
 
 <SectionCard
   kicker="Part 2"
-  title="The implementation"
+  title="The code"
   subtitle="flutter_agent_framework · Flutter · Signals · Gemini"
 />
 
 <!--
-[0:15] Now the code. All of this is real Dart from the framework and the recipes app, cut down to fit.
+[0:15] Now the code. All of this is real Dart from the framework and the recipes app, cut down to fit. Each slide is tagged with the rule it implements.
 -->
 
 ---
 clicks: 5
 ---
 
-# Architecture
+<div class="kicker">The big picture</div>
+
+# Four layers, and the LLM is just one call
 
 <ArchDiagram :stage="$clicks" />
 
 <!--
-[1:30]
+[1:15]
 [click] Voice: the AudioCoordinator is one state machine covering wake word, speech to text and text to speech, with queues so listening and speaking never overlap.
 [click] AgentService runs each turn. It calls the LLM through LLMService with only the tools that are armed.
 [click] The IntentRegistry is a deliberately simple, synchronous store: flows, global tools, armed tools, current flow, interrupts.
@@ -264,46 +336,9 @@ clicks: 5
 
 ---
 
-# Bootstrapping the agent
+<div class="kicker">Rule 1 · Bounded by the app</div>
 
-```dart {1-5|7-20|22-25}
-_provider = openAI(
-  baseUrl: Environment.agentBaseUrl,          // proxy → Gemini
-  tokenProvider: _accessToken,                // user session, refreshed per request
-  headersProvider: () async => {'X-Account-Id': '${activeAccountId.value}'},
-);
-
-await FlutterAgentFramework.initialize(
-  AgentConfig.voice(
-    provider: _provider!,
-    toolScoping: ToolScopingStrategy.narrowToolList,
-    systemPrompt: '''
-You are a helpful cooking, shopping and meal planning assistant inside the recipes4me app.
-The user speaks and their words are transcribed automatically, so the text you receive
-may contain transcription errors...
-When the user asks you to perform an action, call the appropriate function.
-You can manage several different workflows simultaneously...
-''',
-    wakeKeywordId: 'hey_recipes',
-  ),
-);
-
-ShoppingListAssistant.instance.initialize(cartStore: cartStore, searchStore: searchStore, ...);
-CookingAssistant.instance.initialize(apiClient: apiClient, activeAccountId: activeAccountId);
-MealPlanAssistant.instance.initialize(mealPlanStore: mealPlanStore, myRecipesStore: myRecipesStore);
-WhatsForDinnerAssistant.instance.initialize(...);
-```
-
-<!--
-[1:00] lib/voice_agent/voice_agent.dart.
-[click] The provider is whatever the app picks. Here it's an OpenAI-compatible proxy in front of Gemini, with no API key in the app bundle.
-[click] Voice config: a short system prompt, the wake word, and the tool scoping strategy.
-[click] Then each assistant gets the app stores it needs. That's the dependency injection: whatever you hand a flow is all it can touch.
--->
-
----
-
-# App functions → tools
+# A tool is just an annotated app method
 
 ````md magic-move {lines: true}
 ```dart
@@ -352,7 +387,48 @@ agent.registerTool(
 
 ---
 
-# The flow contract
+<div class="kicker">Rule 1 · Bounded by the app</div>
+
+# A flow can only touch what you hand it
+
+```dart {all|22-25}
+_provider = openAI(
+  baseUrl: Environment.agentBaseUrl,          // proxy → Gemini
+  tokenProvider: _accessToken,                // user session, refreshed per request
+  headersProvider: () async => {'X-Account-Id': '${activeAccountId.value}'},
+);
+
+await FlutterAgentFramework.initialize(
+  AgentConfig.voice(
+    provider: _provider!,
+    toolScoping: ToolScopingStrategy.narrowToolList,
+    systemPrompt: '''
+You are a helpful cooking, shopping and meal planning assistant inside the recipes4me app.
+The user speaks and their words are transcribed automatically, so the text you receive
+may contain transcription errors...
+When the user asks you to perform an action, call the appropriate function.
+You can manage several different workflows simultaneously...
+''',
+    wakeKeywordId: 'hey_recipes',
+  ),
+);
+
+ShoppingListAssistant.instance.initialize(cartStore: cartStore, searchStore: searchStore, ...);
+CookingAssistant.instance.initialize(apiClient: apiClient, activeAccountId: activeAccountId);
+MealPlanAssistant.instance.initialize(mealPlanStore: mealPlanStore, myRecipesStore: myRecipesStore);
+WhatsForDinnerAssistant.instance.initialize(...);
+```
+
+<!--
+[0:30] Bootstrapping, lib/voice_agent/voice_agent.dart. A Gemini proxy with no API key in the bundle, a short system prompt, a wake word.
+[click] The bit that matters: each assistant gets the app stores it needs. That's the boundary. Whatever you hand a flow is all it can touch.
+-->
+
+---
+
+<div class="kicker">Rule 2 · Workflows in code</div>
+
+# A flow owns one user intent
 
 ```dart {all|2|3-4|5|7-12}
 abstract class IntentFlow {
@@ -382,7 +458,9 @@ A flow is a <strong>re-entrant orchestrator</strong> for one user intent. It's r
 
 ---
 
-# IntentResult: the flow decides what comes next
+<div class="kicker">Rule 3 · Arm and gate</div>
+
+# The flow, not the LLM, decides what comes next
 
 ```dart {all|3-4|5-17|19}
 FutureOr<IntentResult> startCooking(@Param('The Recipe Id to cook') int recipe_id) {
@@ -415,22 +493,25 @@ FutureOr<IntentResult> startCooking(@Param('The Recipe Id to cook') int recipe_i
 </div>
 
 <!--
-[1:00]
+[1:00] Every tool returns an IntentResult.
 [click] Already cooking something? Don't let the LLM guess.
 [click] Say one thing to the user and something else to the LLM, and arm exactly two tools. Whatever the user says next, the model can only continue or restart.
 [click] Otherwise, start the recipe.
 -->
 
 ---
+class: dense
+---
 
-# The orchestrator
+<div class="kicker">Rule 2 · Workflows in code</div>
 
-```dart {all|2-5|7-14|16-26|28-35}
+# The orchestrator drives the steps and the screen
+
+```dart {all|2-4|6-13|14-23|24-27}
 IntentResult _orchestrate(CookingAssistantContext ctx, List<String> messages) {
   // agent 'shows' the user the cooking assistant screen while orchestrating
-  if (appRouter.routerDelegate.currentConfiguration.uri.path != '/recipes/assistant') {
-    appRouter.go('/recipes/assistant');
-  }
+  final path = appRouter.routerDelegate.currentConfiguration.uri.path;
+  if (path != '/recipes/assistant') appRouter.go('/recipes/assistant');
 
   if (ctx.is_in_pre_cook) {
     orchestratedStepIndex.value = -1;          // signal → screen scrolls to ingredients
@@ -442,7 +523,6 @@ IntentResult _orchestrate(CookingAssistantContext ctx, List<String> messages) {
   }
 
   orchestratedStepIndex.value = ctx.current_step_index;   // highlight the step
-
   final stepAtSet = ctx.current_step;
   if (!identical(_timerStep, stepAtSet)) {
     _stepTimer?.cancel();                      // previous step's timer is obsolete
@@ -452,13 +532,8 @@ IntentResult _orchestrate(CookingAssistantContext ctx, List<String> messages) {
       _timerStep = stepAtSet;
     }
   }
-
   return IntentResult.withNextTools(
-    [
-      ...messages,
-      ctx.current_step_index == 0 ? 'First step' : 'next step',
-      ctx.current_step.prompt,
-    ],
+    [...messages, ctx.current_step_index == 0 ? 'First step' : 'next step', ctx.current_step.prompt],
     ['stepComplete'],
   );
 }
@@ -473,8 +548,12 @@ IntentResult _orchestrate(CookingAssistantContext ctx, List<String> messages) {
 -->
 
 ---
+class: dense
+---
 
-# One turn
+<div class="kicker">Rule 3 · Arm and gate</div>
+
+# The LLM can only call what's armed
 
 <div class="grid grid-cols-[0.8fr_1.2fr] gap-6 mt-2">
 <div class="flex flex-col gap-2 text-sm">
@@ -512,14 +591,18 @@ Future<IntentResult?> _executeIntentTool(
 </div>
 
 <!--
-[1:30] AgentService, one turn.
+[1:30] AgentService, one turn, in five steps.
 [click] The availability gate. Even if the model hallucinates a tool name, or a stale turn arrives late, it can't run anything that isn't armed. This is where "bounded" is enforced in code.
 [click] Then apply the result: attention goes to whichever flow owns the tool, and that flow's requested tools get armed.
 -->
 
 ---
+class: dense
+---
 
-# Tracking attention
+<div class="kicker">Rule 4 · Follow attention</div>
+
+# Attention moves in exactly one place
 
 <div class="grid grid-cols-[1.25fr_1fr] gap-6">
 
@@ -572,6 +655,8 @@ Future<void> _transferAttention(String? newFlowName) async {
 
 ---
 
+<div class="kicker">Rule 2 · Workflows in code</div>
+
 # Interrupts: the app speaks first
 
 ```dart {all|3|4-17}
@@ -610,6 +695,8 @@ Proactive, but <strong>not autonomous</strong>: the flow decides when to speak, 
 clicks: 6
 ---
 
+<div class="kicker">Hands-free</div>
+
 # Voice: one state machine, two queues
 
 <div class="mt-6">
@@ -627,6 +714,8 @@ clicks: 6
 -->
 
 ---
+
+<div class="kicker">Rule 1 · Bounded by the app</div>
 
 # The same agent, three ways in
 
@@ -660,6 +749,8 @@ agent.registryChanges;
 
 ---
 
+<div class="kicker">The payoff</div>
+
 # Tokenomics that add up
 
 <div class="grid grid-cols-3 gap-5 mt-10">
@@ -669,7 +760,7 @@ agent.registryChanges;
 </div>
 
 <!--
-[0:30] A side effect of the design: small context, a small model, and lots of turns that never call the LLM. That's what makes this affordable for consumer apps.
+[0:30] The payoff I promised at the start: small context, a small model, and lots of turns that never call the LLM. That's what makes this affordable for consumer apps.
 -->
 
 ---
@@ -678,16 +769,22 @@ agent.registryChanges;
 
 <div class="grid grid-cols-[1fr_auto] gap-10 items-center mt-6">
   <div class="flex flex-col gap-4 text-xl">
-    <div v-click>① Put the agent loop <strong>inside the app</strong>. Its tools and data end where the app's do.</div>
-    <div v-click>② Use the LLM for <strong>intent</strong> and write <strong>workflows in code</strong>.</div>
-    <div v-click>③ Arm tools <strong>progressively</strong> and <strong>gate</strong> every call.</div>
-    <div v-click>④ Follow the user's <strong>attention</strong>: one current flow, others backgrounded, all remembered.</div>
+    <div v-click>① <strong>Bounded by the app</strong>: put the agent loop inside the app. Its tools and data end where the app's do.</div>
+    <div v-click>② <strong>Workflows in code</strong>: use the LLM for intent, write the process in code.</div>
+    <div v-click>③ <strong>Arm and gate</strong>: offer a few tools at a time, and reject anything else.</div>
+    <div v-click>④ <strong>Follow attention</strong>: one current flow, others backgrounded, all remembered.</div>
   </div>
   <QrCode url="https://acedant.ai" :size="170" caption="TODO: final link" />
 </div>
 
+<div v-click class="mt-10 text-2xl text-center">
+  The human isn't a checkpoint on the agent's loop. The human <span class="accent">IS</span> the loop.
+</div>
+
 <!--
-[1:30] Four things to take home. The human isn't a checkpoint on the agent's loop. The human IS the loop.
+[1:30] The same four rules, to take home.
+[click] [click] [click] [click]
+[click] And back to where we started: the human isn't a checkpoint on the agent's loop. The human IS the loop.
 -->
 
 ---
