@@ -48,7 +48,7 @@ clicks: 3
 
 <div class="kicker">The last three months</div>
 
-# Pandora's box is open
+# Autonomous agents are \#fun
 
 <div class="mt-6 w-4/5 mx-auto">
   <HeadlineStack :stage="$clicks" />
@@ -66,31 +66,31 @@ None of these agents were "evil". They did what they were built to do: take a go
 clicks: 2
 ---
 
-# "Human in the loop" isn't the fix
+# "Human in the loop" is not enough
 
 <div class="grid grid-cols-2 gap-6 mt-8">
   <div class="card">
     <div class="kicker danger">Human in the loop</div>
     <div class="mt-1 dim text-sm">The agent owns the loop. The user is a checkpoint.</div>
     <ul class="mt-4 leading-relaxed">
-      <li>The agent does the thinking, the user ticks a box</li>
-      <li>The agent decides what to attend to, the user steps in when asked</li>
-      <li>The user prompts, the agent goes off and creates</li>
+      <li>The agent does the thinking</li>
+      <li>The agent decides what tools to call</li>
+      <li>The user involved at the start and end, the agent owns the middle</li>
     </ul>
   </div>
   <div v-click="1" class="card">
     <div class="kicker">Human <span class="accent">IS</span> the loop</div>
-    <div class="mt-1 dim text-sm">The user owns the loop. The agent runs short loops inside it.</div>
+    <div class="mt-1 dim text-sm">The user is solving problems with a cognitive loop. The agent runs short loops to support.</div>
     <ul class="mt-4 leading-relaxed">
-      <li>The agent follows what the user is focused on</li>
-      <li>It works through the app's own tools and screens</li>
+      <li>The agent tracks the users focus</li>
+      <li>It's an expert in the apps state and views</li>
       <li>It shares the cognitive load, then gets out of the way</li>
     </ul>
   </div>
 </div>
 
 <div v-click="2" class="mt-10 text-2xl text-center">
-  The agent's loop runs <strong class="accent">inside</strong> the user's loop. Not the other way round.
+  The agent tracks and supports the concerns and decisions of the <strong class="accent">user</strong> first.
 </div>
 
 <!--
@@ -101,28 +101,28 @@ clicks: 2
 
 ---
 
-# Where we're going
+# TLDR
 
 <div class="grid grid-cols-3 gap-5 mt-10">
   <div class="card">
-    <div class="kicker">See it</div>
+    <div class="kicker">Quick Demo</div>
     <div class="text-xl font-700 mt-2">A real in-app agent</div>
     <div class="mt-2 dim">recipes4me: hands-free cooking, shopping and meal planning by voice</div>
   </div>
   <div class="card">
-    <div class="kicker">Part 1 · The idea</div>
+    <div class="kicker">Part 1 · The Pattern</div>
     <div class="text-xl font-700 mt-2">Two loops, four rules</div>
     <div class="mt-2 dim">How the agent's loop fits inside the user's, and what keeps it there</div>
   </div>
   <div class="card">
-    <div class="kicker">Part 2 · The code</div>
+    <div class="kicker">Part 2 · Implementation</div>
     <div class="text-xl font-700 mt-2">Flutter · Signals · Gemini</div>
     <div class="mt-2 dim">Real Dart from a shipping app: tools, flows, attention, voice</div>
   </div>
 </div>
 
 <div class="mt-10 text-center text-lg">
-  You'll leave with a pattern that runs on <strong class="accent">flash-lite</strong>, with 2-6 tools per turn.
+  You'll leave with a flexible pattern that runs in-app on <strong class="accent">low cost</strong> inference.
 </div>
 
 <!--
@@ -134,18 +134,16 @@ layout: center
 ---
 
 <div class="grid grid-cols-[auto_1fr] gap-12 items-center">
-  <PhoneFrame src="/img/agent_chat_slide_menu.png" :width="200" caption="demo video goes here" />
+  <PhoneFrame src="https://pub-26aad13248394af7b8b24b494f0ed211.r2.dev/landing/Acedant_launch_demo_final.mp4" video sound :width="200" caption="demo video" />
   <div>
-    <div class="kicker">Demo</div>
+    <div class="kicker">Quick Demo</div>
     <h1>Cooking with recipes4me</h1>
-    <div class="placeholder mt-6">
-      TODO: record the cooking flow and drop it in as public/video/demo.mp4,<br />
-      then swap to &lt;PhoneFrame src="/video/demo.mp4" video /&gt;
-    </div>
     <ul class="mt-6 dim">
-      <li>"Cook this recipe?" contextual launch</li>
-      <li>voice: ingredients → steps → timer interrupt</li>
-      <li>switch to shopping and back</li>
+      <li> "Can we add tomatoes to the list" - Global actions and routing"</li>
+      <li> "Lets do the weekly Meal Plan" - Wake word & Orchestrated flows</li>
+      <li> "Cook this recipe?" - Contextual flow suggestions</li>
+      <li> "Thats done, next step" - Interruptions</li>
+      <li> "Lets add milk to the shopping list" - Flow Switching and return</li>
     </ul>
   </div>
 </div>
@@ -159,7 +157,7 @@ layout: center
 ---
 
 <SectionCard
-  kicker="Part 1"
+  kicker="Part 1 - The Pattern"
   title="Two loops, four rules"
   subtitle="Why the agent belongs inside the user's loop"
 />
@@ -765,26 +763,23 @@ agent.registryChanges;
 
 ---
 
-# Takeaways
+# Learnings
 
-<div class="grid grid-cols-[1fr_auto] gap-10 items-center mt-6">
-  <div class="flex flex-col gap-4 text-xl">
-    <div v-click>① <strong>Bounded by the app</strong>: put the agent loop inside the app. Its tools and data end where the app's do.</div>
-    <div v-click>② <strong>Workflows in code</strong>: use the LLM for intent, write the process in code.</div>
-    <div v-click>③ <strong>Arm and gate</strong>: offer a few tools at a time, and reject anything else.</div>
-    <div v-click>④ <strong>Follow attention</strong>: one current flow, others backgrounded, all remembered.</div>
-  </div>
-  <QrCode url="https://acedant.ai" :size="170" caption="TODO: final link" />
-</div>
-
-<div v-click class="mt-10 text-2xl text-center">
-  The human isn't a checkpoint on the agent's loop. The human <span class="accent">IS</span> the loop.
+<div class="grid grid-cols-2 gap-4 mt-6">
+  <div v-click class="card"><strong>You need a killer use case</strong><br/><span class="dim">Users are wary of AI. It has to earn its place. For me that was hands-free cooking.</span></div>
+  <div v-click class="card"><strong>Agent UX is hard to get right</strong><br/><span class="dim">Keeping it fluid, arming the right tools, and deciding when to orchestrate vs leave it in the agent loop.</span></div>
+  <div v-click class="card"><strong>On-device models didn't make it</strong><br/><span class="dim">Tried Gemini on device, and tried tiny models. Too dumb. Back to flash-lite in the cloud.</span></div>
+  <div v-click class="card"><strong>Wake word is tricky</strong><br/><span class="dim">The good solutions are paid. I rolled my own with sherpa. It's ok.</span></div>
+  <div v-click class="card col-span-2"><strong>Next: Jev-style models for workflows</strong><br/><span class="dim">Small models for flows with simple decision points.</span></div>
 </div>
 
 <!--
-[1:30] The same four rules, to take home.
-[click] [click] [click] [click]
-[click] And back to where we started: the human isn't a checkpoint on the agent's loop. The human IS the loop.
+[1:30] A few honest lessons from building this.
+[click] You need a killer use case to justify the hassle. Users are wary of AI. For me, hands-free cooking was the one that made it worth it.
+[click] UX with agents is hard to get right. Making it fluid, giving it the right tool calls, and knowing when to orchestrate in code vs leave it in the agent loop is tricky.
+[click] I couldn't get on-device models to work. Tried Gemini on device, tried tiny models - they were too dumb.
+[click] Wake word integration is tricky. You have to pay for the good solutions. I rolled my own in the end, and it's ok.
+[click] Next, I'll definitely look at integrating Jev-style models for workflows with simple decision points.
 -->
 
 ---
@@ -802,4 +797,50 @@ class: text-center
 
 <!--
 [0:30] Questions.
+-->
+
+---
+class: dense
+---
+
+<div class="kicker">Appendix</div>
+
+# On-device agent proof of concept
+
+<table class="poc-table mt-3">
+  <thead>
+    <tr><th>#</th><th>Model / runtime</th><th>Accuracy</th><th>s/turn</th><th>Notes</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>1</td><td>Gemma 4 E2B, flutter_gemma, shared session</td><td>62%</td><td>6.2</td><td class="dim">Late turns stopped calling tools; "10 min" became 9</td></tr>
+    <tr><td>2</td><td>Gemma 4 E2B, native LiteRT-LM, per-turn</td><td class="accent">100%</td><td>11</td><td class="dim">16.8 s cold load</td></tr>
+    <tr><td>3</td><td>Gemma 4 E2B, flutter_gemma, per-turn</td><td class="accent">100%</td><td>10.2</td><td class="dim">Run 1's 62% was mostly the shared session, not the wrapper</td></tr>
+    <tr class="faint"><td>4</td><td>Gemma 4 E4B on iPhone</td><td>-</td><td>-</td><td>Never run</td></tr>
+    <tr><td>5</td><td>Gemma 4 E2B, native, shared session</td><td>95%</td><td>5.8</td><td class="dim">Best Gemma latency, still about 3x the bar</td></tr>
+    <tr><td>6</td><td>LFM2.5-2.6B, LEAP SDK</td><td>76%</td><td class="danger">74</td><td class="dim">LEAP on Android runs on CPU only, with no prefix cache</td></tr>
+    <tr><td>7</td><td>Needle 2 (45M)</td><td>62%</td><td>1.3</td><td class="dim">21 MB RAM, but --serve wedges and the LoRA tune made it worse</td></tr>
+    <tr class="best"><td>8</td><td>Qwen3.5-0.8B, llama-server over adb</td><td>81%</td><td class="accent">1.95</td><td class="dim">The only run under 2 s. Inside the app: 76% at 18.4 s</td></tr>
+    <tr><td>9</td><td>Granite 4.0 Nano 1B, llama.cpp in-app</td><td>81%</td><td class="danger">30</td><td class="dim">Cleanest output (0 malformed), far too slow</td></tr>
+    <tr><td>10</td><td>FunctionGemma 270M base</td><td class="danger">33%</td><td>0.98</td><td class="dim">Fast and poor</td></tr>
+    <tr><td>11</td><td>FunctionGemma 270M, LoRA-tuned</td><td class="danger">25%</td><td>3.7</td><td class="dim">App suite</td></tr>
+    <tr><td>12</td><td>Same tune at F16</td><td class="danger">25%</td><td>2.4</td><td class="dim">Quantisation wasn't the problem; the model's ceiling was</td></tr>
+  </tbody>
+</table>
+
+<div class="mt-3 text-sm dim">Nothing hit accurate <em>and</em> fast enough. The models that were accurate were too slow, and the fast ones weren't accurate.</div>
+
+<style>
+.poc-table { width: 100%; font-size: 0.68rem; border-collapse: collapse; }
+.poc-table th { text-align: left; font-family: var(--mono); font-size: 0.6rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--accent); border-bottom: 1px solid var(--border); padding: 0.3rem 0.5rem; }
+.poc-table td { padding: 0.22rem 0.5rem; border-bottom: 1px solid var(--bg-2); }
+.poc-table td:nth-child(3), .poc-table td:nth-child(4), .poc-table th:nth-child(3), .poc-table th:nth-child(4) { text-align: right; font-family: var(--mono); white-space: nowrap; }
+.poc-table tr.best { background: rgba(181, 227, 107, 0.08); }
+.poc-table tr.faint td { color: var(--ink-faint); }
+</style>
+
+<!--
+Appendix, for Q&A. Results from trying to run the agent fully on device.
+Gemma 4 E2B got to 100% accuracy with a fresh session per turn, but at 10-11 s per turn. Sharing a session made it faster but less accurate.
+The only run under 2 s per turn was Qwen3.5-0.8B over adb, and inside the app that dropped to 76% at 18.4 s.
+Tiny function-calling models were fast but too dumb, and LoRA tuning didn't fix it.
 -->
