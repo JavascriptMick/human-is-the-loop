@@ -167,7 +167,7 @@ layout: center
 -->
 
 ---
-clicks: 15
+clicks: 14
 ---
 
 <div class="kicker">The agent's loop</div>
@@ -193,8 +193,7 @@ How we use a prompt hack to turn a token generator into an autonomous agent
 [click] Back to the harness...
 [click] ...and back to the app.
 [click] If it wants more tools, steps 5 to 9 repeat until it decides it's done. Nothing in here asks the user anything.
-[click] From the harness side it's tiny: call the model, run its tools, append.
-[click] Call, execute, repeat until it responds.
+[click] From the harness side it's tiny: call the model, execute its tools, append, repeat until it responds.
 -->
 
 ---

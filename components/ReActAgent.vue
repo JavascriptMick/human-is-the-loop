@@ -3,8 +3,8 @@ import { computed } from 'vue'
 
 // The ReAct agent, one message per click. Left: who talks to whom (the execution).
 // Right: what the LLM sees (the context), filling up as the loop runs.
-// Stage 13 shows the loop repeating; stages 14 and 15 swap the execution for the
-// harness loop, first as pseudocode, then as a flowchart.
+// Stage 13 shows the loop repeating; stage 14 swaps the execution for the
+// harness loop as a flowchart.
 const props = withDefaults(defineProps<{ stage?: number }>(), { stage: 99 })
 
 type Kind = 'send' | 'ret' | 'act' | 'obs'
@@ -96,36 +96,16 @@ const captions = [
   'The API returns the Final answer to the Harness.',
   'The Harness returns the Answer to the App.',
   'Needs another tool? Steps 5-9 repeat, adding TH · ACT · OBS each time, until the LLM gives a Final answer.',
-  'Keep the model\'s tool-call message and the corresponding tool results together in history.',
   'Call the model. Execute its tools. Repeat until it responds.',
 ]
 
 const caption = computed(() => captions[Math.min(Math.max(props.stage, 0), captions.length - 1)])
 const harnessView = computed(() => props.stage >= 14)
-const codeView = computed(() => props.stage === 14)
-const flowView = computed(() => props.stage >= 15)
 
 function edgeState(e: Edge) {
   if (props.stage < e.n) return 'off'
   return props.stage === e.n ? 'current' : 'past'
 }
-
-// Harness loop pseudocode: [indent, tokens] where each token is [text, class].
-type Tok = [string, string?]
-const code: [number, Tok[]][] = [
-  [0, [['messages', 'v'], [' ← [user_question]']]],
-  [0, []],
-  [0, [['repeat', 'k'], [':']]],
-  [1, [['response', 'v'], [' ← '], ['call_model', 'f'], ['(']]],
-  [3, [['system_prompt, tools, '], ['messages', 'v'], [')']]],
-  [1, [['messages', 'v'], ['.append('], ['response', 'v'], [')']]],
-  [0, []],
-  [1, [['if', 'k'], [' '], ['response', 'v'], [' has tool_calls:']]],
-  [2, [['results', 'v'], [' ← '], ['execute_tools', 'x'], ['('], ['response', 'v'], ['.tool_calls)']]],
-  [2, [['messages', 'v'], ['.append_all('], ['results', 'v'], [')']]],
-  [1, [['else', 'k'], [':']]],
-  [2, [['return', 'k'], [' '], ['response', 'v']]],
-]
 </script>
 
 <template>
@@ -164,18 +144,8 @@ const code: [number, Tok[]][] = [
       </g>
     </g>
 
-    <!-- harness loop: pseudocode (stage 14) -->
-    <g class="swap" :class="{ on: codeView }">
-      <rect x="0" y="30" width="620" height="342" rx="12" class="code-box" />
-      <text x="24" y="60" class="code-heading">PSEUDOCODE</text>
-      <text
-        v-for="([indent, toks], i) in code" :key="i"
-        :x="24 + indent * 18" :y="94 + i * 24" class="code"
-      ><tspan v-for="(t, j) in toks" :key="j" :class="t[1] ? `c-${t[1]}` : undefined">{{ t[0] }}</tspan></text>
-    </g>
-
-    <!-- harness loop: flowchart (stage 15) -->
-    <g class="swap flow" :class="{ on: flowView }">
+    <!-- harness loop: flowchart (stage 14) -->
+    <g class="swap flow" :class="{ on: harnessView }">
       <rect x="195" y="36" width="170" height="40" rx="8" class="fl call" />
       <text x="280" y="61" class="fl-label">Call model</text>
       <line x1="280" y1="76" x2="280" y2="100" class="fl-arrow ret" marker-end="url(#ra-ret)" />
@@ -364,35 +334,6 @@ const code: [number, Tok[]][] = [
 }
 
 /* harness loop */
-.code-box {
-  fill: #0a1612;
-  stroke: var(--border);
-  stroke-width: 1.5;
-}
-.code-heading {
-  fill: var(--ink);
-  font-size: 12px;
-  font-weight: 800;
-  letter-spacing: 0.12em;
-}
-.code {
-  fill: var(--ink);
-  font-family: var(--mono);
-  font-size: 15px;
-  white-space: pre;
-}
-.c-v {
-  fill: var(--info);
-}
-.c-k {
-  fill: var(--purple);
-}
-.c-f {
-  fill: var(--teal);
-}
-.c-x {
-  fill: var(--danger);
-}
 .fl {
   stroke-width: 1.8;
 }
