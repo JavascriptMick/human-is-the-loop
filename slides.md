@@ -317,7 +317,7 @@ layout: center
 clicks: 5
 ---
 
-<div class="kicker">The big picture</div>
+<div class="kicker">Architecture</div>
 
 # Four layers, and the LLM is just one call
 
@@ -747,30 +747,13 @@ agent.registryChanges;
 
 ---
 
-<div class="kicker">The payoff</div>
-
-# Tokenomics that add up
-
-<div class="grid grid-cols-3 gap-5 mt-10">
-  <div v-click class="card"><div class="text-4xl font-800 accent">2-6</div><div class="mt-2">armed tools per turn, not the whole app. <code>narrowToolList</code></div></div>
-  <div v-click class="card"><div class="text-4xl font-800 accent">flash-lite</div><div class="mt-2">a small, cheap model works because it only has to <strong>classify intent</strong></div></div>
-  <div v-click class="card"><div class="text-4xl font-800 accent">0</div><div class="mt-2">LLM calls for regex fast paths, direct actions and interrupts</div></div>
-</div>
-
-<!--
-[0:30] The payoff I promised at the start: small context, a small model, and lots of turns that never call the LLM. That's what makes this affordable for consumer apps.
--->
-
----
-
 # Learnings
 
 <div class="grid grid-cols-2 gap-4 mt-6">
   <div v-click class="card"><strong>You need a killer use case</strong><br/><span class="dim">Users are wary of AI. It has to earn its place. For me that was hands-free cooking.</span></div>
   <div v-click class="card"><strong>Agent UX is hard to get right</strong><br/><span class="dim">Keeping it fluid, arming the right tools, and deciding when to orchestrate vs leave it in the agent loop.</span></div>
-  <div v-click class="card"><strong>On-device models didn't make it</strong><br/><span class="dim">Tried Gemini on device, and tried tiny models. Too dumb. Back to flash-lite in the cloud.</span></div>
-  <div v-click class="card"><strong>Wake word is tricky</strong><br/><span class="dim">The good solutions are paid. I rolled my own with sherpa. It's ok.</span></div>
-  <div v-click class="card col-span-2"><strong>Next: Jev-style models for workflows</strong><br/><span class="dim">Small models for flows with simple decision points.</span></div>
+  <div v-click class="card"><strong>On-device models didn't make it</strong><br/><span class="dim">Gemini was accurate but too slow, Function Gemma and Needle 2 were fast enough but inaccurate.</span></div>
+  <div v-click class="card"><strong>Cross platform wake word is tricky</strong><br/><span class="dim">The good solutions are paid. I rolled my own with sherpa_onnx.</span></div>
 </div>
 
 <!--
