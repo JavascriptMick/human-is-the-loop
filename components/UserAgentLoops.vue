@@ -86,6 +86,18 @@ const user: Say[] = [
   waiting,
   { phase: "obs", lines: ['"Carrots are on the list."'] },
   { phase: "reason", lines: ['"Now I need some carrot recipes..."'] },
+  {
+    phase: "act",
+    lines: ['"Hey Recipes, find me some good', 'carrot recipes for next week."'],
+  },
+  waiting,
+  waiting,
+  waiting,
+  waiting,
+  waiting,
+  waiting,
+  waiting,
+  waiting,
 ];
 
 // Index = click. The agent only exists in the user's loop from click 6, and
@@ -138,6 +150,32 @@ const agent: (Say | null)[] = [
   { phase: "final", lines: ['"Baby carrots have been added', 'to the list."'] },
   null,
   { phase: "idle", lines: ["Done. Back to waiting for the user."] },
+  { phase: "trigger", lines: ["A request from the user."] },
+  {
+    phase: "reason",
+    lines: [
+      "The user wants recipes. No tool for",
+      "that here, but I can start the",
+      "recipe planning process.",
+    ],
+  },
+  { phase: "act", lines: ["startPlanning()"], mono: true },
+  { phase: "obs", lines: ["startPlanning returned OK."] },
+  { phase: "reason", lines: ["I have a tool for recipes."] },
+  {
+    phase: "act",
+    lines: ["searchForRecipeByIngredient(", '  "Carrots")'],
+    mono: true,
+  },
+  { phase: "obs", lines: ["There are two recipes."] },
+  {
+    phase: "reason",
+    lines: ["Not clear which one to add.", "Better ask the user."],
+  },
+  {
+    phase: "final",
+    lines: ['"I found carrot soup', 'and carrot pie."'],
+  },
 ];
 
 const captions = [
@@ -163,6 +201,15 @@ const captions = [
   "Finish: the agent reports back.",
   "Observe: the result lands back in the user's loop.",
   "The user runs the big loop and moves on. The agent ran two short loops inside it.",
+  "Act: a new request, and a new intent. Not shopping this time, meal planning.",
+  "The agent reasons: no armed tool fits, but a global tool starts the planning flow.",
+  "The agent acts: it starts the meal planning flow.",
+  "The agent observes: planning has started, and its tools are armed.",
+  "The agent reasons: there's now a tool to search recipes.",
+  "The agent acts: it searches for carrot recipes.",
+  "The agent observes: two recipes match.",
+  "The agent reasons: it can't know which one the user wants, so it asks.",
+  "Finish: the agent asks the user to choose.",
 ];
 
 const LAST = captions.length - 1;
@@ -236,6 +283,7 @@ const links: Link[] = [
     steps: [
       { n: 6, label: '"Hey Recipes..."' },
       { n: 14, label: '"the baby carrots"' },
+      { n: 22, label: '"Hey Recipes..."' },
     ],
     kind: "act",
     d: "M504,160 L744,160",
@@ -246,6 +294,7 @@ const links: Link[] = [
     steps: [
       { n: 11, label: "a question" },
       { n: 19, label: "done" },
+      { n: 30, label: "a question" },
     ],
     kind: "final",
     d: "M684,236 L480,236",
@@ -301,6 +350,22 @@ const shownLinks = computed(() =>
   props.compact ? links.filter((l) => !l.world) : links,
 );
 const live = computed(() => !!a.value && a.value.phase !== "idle");
+// Mid-loop: live, but not yet handing back to the user.
+const working = computed(() => live.value && a.value?.phase !== "final");
+
+// The registry's currentFlowName: which flow holds the user's attention. Each
+// entry takes effect from click n. Drawn over the magic box too, because it's
+// state the user can see in the app.
+const flowChanges = [
+  { n: 8, flow: "shopping" },
+  { n: 19, flow: "" },
+  { n: 24, flow: "meal_planning" },
+];
+const currentFlowName = computed(
+  () => [...flowChanges].reverse().find((f) => f.n <= s.value)?.flow ?? "",
+);
+// mono glyphs are ~0.6em wide: label at 9.5px, value at 10.5px
+const flowChipW = computed(() => 16 * 5.7 + currentFlowName.value.length * 6.3 + 22);
 </script>
 
 <template>
@@ -426,8 +491,6 @@ const live = computed(() => !!a.value && a.value.phase !== "idle");
     <g class="app" :class="{ live }">
       <rect x="670" y="26" width="290" height="352" rx="16" class="app-frame" />
       <text x="686" y="50" class="app-title">Recipes4Me agent</text>
-      <rect x="686" y="60" width="96" height="20" rx="10" class="expert" />
-      <text x="734" y="74" class="expert-label">recipe expert</text>
 
       <g class="ring agent-ring">
         <path
@@ -485,13 +548,32 @@ const live = computed(() => !!a.value && a.value.phase !== "idle");
     </g>
 
     <!-- the agent as a magic box -->
-    <g v-if="hideAgentWorking" class="magic-box" :class="{ live }">
+    <g v-if="hideAgentWorking" class="magic-box" :class="{ working }">
       <rect x="670" y="26" width="290" height="352" rx="16" class="cover" />
       <g class="cog">
         <circle cx="815" cy="202" r="36" class="teeth" />
         <circle cx="815" cy="202" r="31" class="wheel" />
         <circle cx="815" cy="202" r="10" class="hole" />
       </g>
+    </g>
+
+    <!-- which flow holds attention -->
+    <g
+      v-if="currentFlowName"
+      :key="currentFlowName"
+      class="current-flow appear"
+    >
+      <rect
+        x="686"
+        y="60"
+        :width="flowChipW"
+        height="20"
+        rx="10"
+      />
+      <text x="697" y="74">
+        <tspan class="cf-label">currentFlowName </tspan>
+        <tspan class="cf-value">{{ currentFlowName }}</tspan>
+      </text>
     </g>
 
     <!-- links between the zones -->
@@ -841,17 +923,6 @@ const live = computed(() => !!a.value && a.value.phase !== "idle");
   font-size: 15px;
   font-weight: 800;
 }
-.expert {
-  fill: rgba(181, 227, 107, 0.12);
-  stroke: var(--accent-dim);
-  stroke-width: 1;
-}
-.expert-label {
-  fill: var(--accent);
-  font-family: var(--mono);
-  font-size: 10.5px;
-  text-anchor: middle;
-}
 
 /* magic box */
 .magic-box .cover {
@@ -878,13 +949,31 @@ const live = computed(() => !!a.value && a.value.phase !== "idle");
   animation: spin 3s linear infinite;
   animation-play-state: paused;
 }
-.magic-box.live .cog {
+.magic-box.working .cog {
   animation-play-state: running;
 }
 @keyframes spin {
   to {
     transform: rotate(360deg);
   }
+}
+
+/* current flow */
+.current-flow rect {
+  fill: rgba(181, 227, 107, 0.12);
+  stroke: var(--accent-dim);
+  stroke-width: 1;
+}
+.cf-label {
+  fill: var(--ink-faint);
+  font-family: var(--mono);
+  font-size: 9.5px;
+}
+.cf-value {
+  fill: var(--accent);
+  font-family: var(--mono);
+  font-size: 10.5px;
+  font-weight: 700;
 }
 
 /* links */

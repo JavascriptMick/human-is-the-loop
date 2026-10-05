@@ -212,14 +212,14 @@ clicks: 14
 -->
 
 ---
-clicks: 21
+clicks: 30
 ---
 
 <div class="kicker">600 Million years of development doesn't need replacing, just some help</div>
 
 # Supporting The Cognitive Loop
 
-<UserAgentLoops :stage="$clicks" hide-agent-working class="-mt-2" />
+<UserAgentLoops :stage="$clicks"  class="-mt-2" />
 
 <!--
 [1:45] Now meet the person it's for. Recipes4Me is B2C, and our key users are busy people running a home, very often mums. They multitask hard. Look at everything else on their mind.
@@ -244,6 +244,15 @@ clicks: 21
 [click] And it finishes: carrots have been added to the list.
 [click] Back into the user's loop as an observation. Carrots are on the list.
 [click] And the user is already onto the next thing: now I need some carrot recipes. The user runs the big loop. The agent runs short loops inside it, sharing the cognitive load, as an expert in the app's domain.
+[click] "Hey Recipes, find me some good carrot recipes for next week." A new intent: not shopping any more, meal planning.
+[click] The agent reasons: none of the tools it has right now fit, but it can start the recipe planning process.
+[click] It acts: startPlanning(), a global tool, like addShoppingListItem.
+[click] It observes: planning has started, and meal planning's own tools are now armed.
+[click] It reasons: now there's a tool for recipes.
+[click] It acts: searchForRecipeByIngredient("Carrots").
+[click] It observes: there are two recipes.
+[click] It reasons: it's not clear which one to add, so it doesn't guess. Better ask.
+[click] And it finishes with a question: "I found carrot soup and carrot pie." The user changed context, and the agent followed.
 -->
 
 ---
