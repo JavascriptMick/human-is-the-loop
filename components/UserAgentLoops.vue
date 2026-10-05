@@ -3,13 +3,21 @@ import { computed } from "vue";
 
 // The user's own reason/act/observe loop, with the in-app agent's loop running
 // inside one of its steps. One step per click. Left: the real world (the
-// fridge). Centre: the user and their internal monologue. Right: the agent.
+// fridge). Centre: the user, with a chat of what they think, say and do, and
+// what the agent says back. Right: the agent.
 // Colours match ReActAgent: reason purple, act red, observe teal, answer lime.
 // `compact` is the thumbnail used on the code slides: it crops away the real
-// world, the mental-load pills and the caption so the two loops fill the frame.
+// world and the caption so the two loops fill the frame.
+// `hideAgentWorking` covers the app with a black box and a cog, so the agent
+// is a magic box: the cog spins while the agent is working, and the captions
+// for the agent's own steps are replaced.
 const props = withDefaults(
-  defineProps<{ stage?: number; compact?: boolean }>(),
-  { stage: 99, compact: false },
+  defineProps<{
+    stage?: number;
+    compact?: boolean;
+    hideAgentWorking?: boolean;
+  }>(),
+  { stage: 99, compact: false, hideAgentWorking: false },
 );
 
 type Phase =
@@ -36,14 +44,8 @@ const tags: Record<Phase, string> = {
   idle: "",
 };
 
-const waitingSlip: Say = {
-  phase: "meanwhile",
-  lines: ['"...did I sign that permission slip?"'],
-};
-const waitingDog: Say = {
-  phase: "meanwhile",
-  lines: ['"...is the dog fed?"'],
-};
+// The user's mind is elsewhere while the agent works: nothing goes in the chat.
+const waiting: Say = { phase: "meanwhile", lines: [] };
 
 // Index = click. Each entry is what the user is reasoning or doing at that point.
 const user: Say[] = [
@@ -63,23 +65,25 @@ const user: Say[] = [
   },
   { phase: "reason", lines: ['"Better buy some."'] },
   { phase: "act", lines: ['"Hey Recipes, add carrots to the list."'] },
-  waitingSlip,
-  waitingSlip,
-  waitingSlip,
-  waitingSlip,
+  waiting,
+  waiting,
+  waiting,
+  waiting,
+  waiting,
   {
     phase: "obs",
     lines: ['"Oh, there are two kinds of carrots', 'in my favourites."'],
   },
   {
     phase: "reason",
-    lines: ['"I prefer the baby carrots.', 'They\'re tender."'],
+    lines: ['"I prefer the baby carrots.', "They're tender.\""],
   },
   { phase: "act", lines: ['"The baby carrots."'] },
-  waitingDog,
-  waitingDog,
-  waitingDog,
-  waitingDog,
+  waiting,
+  waiting,
+  waiting,
+  waiting,
+  waiting,
   { phase: "obs", lines: ['"Carrots are on the list."'] },
   { phase: "reason", lines: ['"Now I need some carrot recipes..."'] },
 ];
@@ -113,8 +117,12 @@ const agent: (Say | null)[] = [
   },
   {
     phase: "final",
-    lines: ['"There are two carrots in your', 'favourites. Which should I add?"'],
+    lines: [
+      '"There are two carrots in your',
+      'favourites. Which should I add?"',
+    ],
   },
+  null,
   null,
   { phase: "obs", lines: ["The user picked the baby carrots."] },
   {
@@ -127,7 +135,8 @@ const agent: (Say | null)[] = [
     phase: "reason",
     lines: ["Tool call is good, looks like", "we are done."],
   },
-  { phase: "final", lines: ['"Carrots have been added', 'to the list."'] },
+  { phase: "final", lines: ['"Baby carrots have been added', 'to the list."'] },
+  null,
   { phase: "idle", lines: ["Done. Back to waiting for the user."] },
 ];
 
@@ -143,14 +152,16 @@ const captions = [
   "The agent acts: it calls one of the app's own tools.",
   "The agent observes: two products match.",
   "The agent reasons: it can't know which one the user wants, so it doesn't guess.",
-  "Finish: the agent asks. Its question becomes an observation in the user's loop.",
+  "Finish: the agent can't go on without the user, so it asks.",
+  "Observe: the agent's question becomes an observation in the user's loop.",
   "The user reasons with something only they know: their own preference.",
   "Act: the user answers, which starts a second short agent loop.",
   "The agent reasons: now there's a specific product, and a tool for that.",
   "The agent acts: it adds the exact product by id.",
   "The agent observes: success.",
   "The agent reasons: the task is complete, so it can wrap up.",
-  "Finish: the result lands back in the user's loop as an observation.",
+  "Finish: the agent reports back.",
+  "Observe: the result lands back in the user's loop.",
   "The user runs the big loop and moves on. The agent ran two short loops inside it.",
 ];
 
@@ -158,17 +169,15 @@ const LAST = captions.length - 1;
 const s = computed(() => Math.max(0, Math.min(props.stage, LAST)));
 const u = computed(() => user[s.value]);
 const a = computed(() => agent[s.value]);
-const caption = computed(() => captions[s.value]);
-
-// Everything else on the user's mind: always there, never the agent's business.
-const noise = [
-  { text: "school pickup 3:15", x: 238, y: 40 },
-  { text: "reply to work email", x: 470, y: 36 },
-  { text: "is the dog fed?", x: 548, y: 88 },
-  { text: "permission slip!", x: 236, y: 92 },
-  { text: "dentist Tuesday?", x: 236, y: 250 },
-];
-const pillW = (t: string) => t.length * 6.1 + 18;
+// While the user's mind is elsewhere the agent is mid-loop; with the agent
+// hidden, its step-by-step captions would describe what nobody can see.
+const caption = computed(() =>
+  props.hideAgentWorking &&
+  u.value.phase === "meanwhile" &&
+  a.value?.phase !== "final"
+    ? "...the agent is working"
+    : captions[s.value],
+);
 
 // Reason/act/observe ring: three badges clockwise from the top.
 interface Ring {
@@ -226,7 +235,7 @@ const links: Link[] = [
   {
     steps: [
       { n: 6, label: '"Hey Recipes..."' },
-      { n: 13, label: '"the baby carrots"' },
+      { n: 14, label: '"the baby carrots"' },
     ],
     kind: "act",
     d: "M504,160 L744,160",
@@ -236,7 +245,7 @@ const links: Link[] = [
   {
     steps: [
       { n: 11, label: "a question" },
-      { n: 18, label: "done" },
+      { n: 19, label: "done" },
     ],
     kind: "final",
     d: "M684,236 L480,236",
@@ -251,6 +260,43 @@ function linkState(l: Link) {
   if (!st) return "off";
   return st.n === s.value ? "current" : "past";
 }
+// The chat: every step the user takes, plus what the agent says back.
+type Kind = "thinks" | "says" | "does" | "agent";
+interface Message {
+  key: number;
+  kind: Kind;
+  phase: Phase;
+  text: string;
+}
+const flags: Record<Kind, string> = {
+  thinks: "USER THINKS",
+  says: "USER SAYS",
+  does: "USER DOES",
+  agent: "AGENT SAYS",
+};
+const unquote = (lines: string[]) => lines.join(" ").replace(/^"|"$/g, "");
+function userMessage(say: Say, key: number): Message {
+  const quoted = say.lines[0].startsWith('"');
+  const kind: Kind = !quoted ? "does" : say.phase === "act" ? "says" : "thinks";
+  return { key, kind, phase: say.phase, text: unquote(say.lines) };
+}
+const chat = computed(() => {
+  const out: Message[] = [];
+  for (let i = 0; i <= s.value; i++) {
+    const said = agent[i];
+    if (said?.phase === "final")
+      out.push({
+        key: i * 2,
+        kind: "agent",
+        phase: "final",
+        text: unquote(said.lines),
+      });
+    if (user[i].lines.length && user[i].phase !== "idle")
+      out.push(userMessage(user[i], i * 2 + 1));
+  }
+  return out.slice(-3);
+});
+
 const shownLinks = computed(() =>
   props.compact ? links.filter((l) => !l.world) : links,
 );
@@ -296,7 +342,14 @@ const live = computed(() => !!a.value && a.value.phase !== "idle");
       <line x1="40" y1="130" x2="180" y2="130" class="shelf" />
       <line x1="40" y1="200" x2="180" y2="200" class="shelf inner" />
       <g class="food">
-        <g v-for="(e, i) in [[78, 182], [122, 180], [76, 270]]" :key="i">
+        <g
+          v-for="(e, i) in [
+            [78, 182],
+            [122, 180],
+            [76, 270],
+          ]"
+          :key="i"
+        >
           <ellipse
             :cx="e[0]"
             :cy="e[1]"
@@ -316,12 +369,6 @@ const live = computed(() => !!a.value && a.value.phase !== "idle");
       <line x1="164" y1="150" x2="164" y2="190" class="handle door-part" />
       <line x1="164" y1="90" x2="164" y2="116" class="handle" />
       <rect x="18" y="130" width="22" height="170" rx="4" class="door-open" />
-    </g>
-
-    <!-- the user's mental load -->
-    <g v-for="p in compact ? [] : noise" :key="p.text" class="noise">
-      <rect :x="p.x" :y="p.y - 13" :width="pillW(p.text)" height="20" rx="10" />
-      <text :x="p.x + 9" :y="p.y + 1">{{ p.text }}</text>
     </g>
 
     <!-- the user and their loop -->
@@ -359,29 +406,21 @@ const live = computed(() => !!a.value && a.value.phase !== "idle");
       <text x="332" y="130">TRIGGER</text>
     </g>
 
-    <!-- internal monologue -->
-    <rect x="240" y="286" width="380" height="92" rx="12" class="mono-box" />
-    <text x="256" y="306" class="box-label">INTERNAL MONOLOGUE</text>
-    <g :key="`u${s}`" class="say appear" :class="u.phase">
-      <text
-        v-if="tags[u.phase]"
-        x="604"
-        y="306"
-        class="say-tag"
-        text-anchor="end"
-      >
-        {{ tags[u.phase] }}
-      </text>
-      <text
-        v-for="(l, i) in u.lines"
-        :key="i"
-        x="256"
-        :y="332 + i * 20"
-        class="say-line user-line"
-      >
-        {{ l }}
-      </text>
-    </g>
+    <!-- the chat -->
+    <rect x="240" y="262" width="380" height="122" rx="12" class="mono-box" />
+    <foreignObject x="248" y="266" width="364" height="114">
+      <div class="chat">
+        <div
+          v-for="(m, i) in chat"
+          :key="m.key"
+          class="msg"
+          :class="[m.kind, m.phase, { latest: i === chat.length - 1 }]"
+        >
+          <span class="flag">{{ flags[m.kind] }}</span>
+          <span class="text">{{ m.text }}</span>
+        </div>
+      </div>
+    </foreignObject>
 
     <!-- the app and its agent -->
     <g class="app" :class="{ live }">
@@ -443,6 +482,16 @@ const live = computed(() => !!a.value && a.value.phase !== "idle");
       <text v-else x="698" y="274" class="say-line agent-line idle">
         Waiting for the user.
       </text>
+    </g>
+
+    <!-- the agent as a magic box -->
+    <g v-if="hideAgentWorking" class="magic-box" :class="{ live }">
+      <rect x="670" y="26" width="290" height="352" rx="16" class="cover" />
+      <g class="cog">
+        <circle cx="815" cy="202" r="36" class="teeth" />
+        <circle cx="815" cy="202" r="31" class="wheel" />
+        <circle cx="815" cy="202" r="10" class="hole" />
+      </g>
     </g>
 
     <!-- links between the zones -->
@@ -555,31 +604,6 @@ const live = computed(() => !!a.value && a.value.phase !== "idle");
 }
 .fridge.looked .no-carrots {
   opacity: 1;
-}
-
-/* mental load */
-.noise {
-  animation: drift 6s ease-in-out infinite alternate;
-}
-.noise:nth-of-type(2n) {
-  animation-duration: 7.5s;
-  animation-delay: -2s;
-}
-.noise rect {
-  fill: var(--bg-2);
-  stroke: var(--ink-faint);
-  stroke-width: 1;
-  stroke-dasharray: 3 3;
-}
-.noise text {
-  fill: var(--ink-faint);
-  font-size: 11px;
-  font-style: italic;
-}
-@keyframes drift {
-  to {
-    transform: translateY(-4px);
-  }
 }
 
 /* loops */
@@ -703,9 +727,6 @@ const live = computed(() => !!a.value && a.value.phase !== "idle");
 .say.final {
   --c: var(--accent);
 }
-.say.meanwhile {
-  --c: var(--warm);
-}
 .say-tag {
   fill: var(--c);
   font-family: var(--mono);
@@ -717,14 +738,75 @@ const live = computed(() => !!a.value && a.value.phase !== "idle");
   fill: var(--ink);
   white-space: pre;
 }
-.user-line {
-  font-size: 15px;
+
+/* chat */
+.chat {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  gap: 4px;
+  overflow: hidden;
+  font-family: Inter, sans-serif;
+}
+.msg {
+  --c: var(--warm);
+  flex-shrink: 0;
+  max-width: 84%;
+  padding: 3px 9px 4px;
+  border-radius: 9px;
+  border: 1px solid var(--c);
+  align-self: flex-end;
+  opacity: 0.45;
+  transition: opacity 0.35s ease;
+}
+.msg.latest {
+  opacity: 1;
+  animation: appear 0.35s ease both;
+}
+.msg.thinks {
+  --c: var(--purple);
+  border-style: dashed;
+}
+.msg.thinks.trigger {
+  --c: var(--info);
+}
+.msg.does {
+  --c: var(--danger);
+}
+.msg.does.obs {
+  --c: var(--teal);
+}
+.msg.says {
+  background: rgba(240, 160, 80, 0.12);
+}
+.msg.agent {
+  --c: var(--accent);
+  align-self: flex-start;
+  background: rgba(181, 227, 107, 0.1);
+}
+.flag {
+  display: block;
+  color: var(--c);
+  font-family: var(--mono);
+  font-size: 7.5px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+}
+.text {
+  display: block;
+  color: var(--ink);
+  font-size: 11.5px;
+  line-height: 1.3;
+}
+.msg.thinks .text {
   font-style: italic;
 }
-.say.meanwhile .user-line,
-.say.idle .user-line {
-  fill: var(--ink-dim);
+.msg.agent .text {
+  color: var(--accent);
+  font-weight: 600;
 }
+
 .agent-line {
   font-size: 12.5px;
 }
@@ -769,6 +851,40 @@ const live = computed(() => !!a.value && a.value.phase !== "idle");
   font-family: var(--mono);
   font-size: 10.5px;
   text-anchor: middle;
+}
+
+/* magic box */
+.magic-box .cover {
+  fill: #000;
+  stroke: var(--border);
+  stroke-width: 1.5;
+}
+.magic-box .teeth {
+  fill: none;
+  stroke: var(--ink-dim);
+  stroke-width: 12;
+  /* 12 teeth round a circumference of 2π·36 */
+  stroke-dasharray: 10.5 8.35;
+}
+.magic-box .wheel {
+  fill: var(--ink-dim);
+}
+.magic-box .hole {
+  fill: #000;
+}
+.magic-box .cog {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: spin 3s linear infinite;
+  animation-play-state: paused;
+}
+.magic-box.live .cog {
+  animation-play-state: running;
+}
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 /* links */

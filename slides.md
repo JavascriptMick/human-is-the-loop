@@ -212,14 +212,14 @@ clicks: 14
 -->
 
 ---
-clicks: 19
+clicks: 21
 ---
 
-<div class="kicker">A survival mechanism developed over the last 600 million years</div>
+<div class="kicker">600 Million years of development doesn't need replacing, just some help</div>
 
-# The Cognitive Loop
+# Supporting The Cognitive Loop
 
-<UserAgentLoops :stage="$clicks" class="-mt-2" />
+<UserAgentLoops :stage="$clicks" hide-agent-working class="-mt-2" />
 
 <!--
 [1:45] Now meet the person it's for. Recipes4Me is B2C, and our key users are busy people running a home, very often mums. They multitask hard. Look at everything else on their mind.
@@ -233,14 +233,16 @@ clicks: 19
 [click] It acts: addShoppingListItem("carrots").
 [click] It observes: two matching products in the user's favourites.
 [click] It reasons: there's no way of knowing which one, so it doesn't guess. Better ask.
-[click] It finishes with a question, which lands in the user's loop as an observation. Oh, two kinds of carrots.
+[click] It finishes with a question. It can't go on without the user.
+[click] The question lands in the user's loop as an observation. Oh, two kinds of carrots.
 [click] The user reasons with something only they know. I prefer the baby carrots, they're tender.
 [click] Act: "The baby carrots." That starts a second, short agent loop. The agent observes the choice.
 [click] It reasons: now there's a specific product, and a tool to add a product by id.
 [click] It acts: addProductToCartById.
 [click] It observes: success.
 [click] It reasons: tool call is good, looks like we are done. The model decides the task is complete before it returns.
-[click] And it finishes: carrots have been added to the list. Back into the user's loop.
+[click] And it finishes: carrots have been added to the list.
+[click] Back into the user's loop as an observation. Carrots are on the list.
 [click] And the user is already onto the next thing: now I need some carrot recipes. The user runs the big loop. The agent runs short loops inside it, sharing the cognitive load, as an expert in the app's domain.
 -->
 
@@ -427,8 +429,8 @@ class: dense
 
 <div class="grid grid-cols-[0.75fr_1.25fr] gap-6 mt-2">
 <div>
-  <UserAgentLoops compact :stage="[13, 16, 16, 17, 19][$clicks]" />
-  <div class="text-xs dim mt-2">Slide 8, click {{ [13, 16, 16, 17, 19][$clicks] }}: "The baby carrots."</div>
+  <UserAgentLoops compact :stage="[14, 17, 17, 18, 19][$clicks]" />
+  <div class="text-xs dim mt-2">Slide 8, click {{ [14, 17, 17, 18, 19][$clicks] }}: "The baby carrots."</div>
 </div>
 
 ```dart {all|4-5|15-20|21-23|24-26}
