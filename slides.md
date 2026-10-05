@@ -219,7 +219,7 @@ clicks: 30
 
 # Supporting The Cognitive Loop
 
-<UserAgentLoops :stage="$clicks"  class="-mt-2" />
+<UserAgentLoops :stage="$clicks"  hide-agent-working class="-mt-2" />
 
 <!--
 [1:45] Now meet the person it's for. Recipes4Me is B2C, and our key users are busy people running a home, very often mums. They multitask hard. Look at everything else on their mind.

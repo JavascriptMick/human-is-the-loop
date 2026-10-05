@@ -216,13 +216,25 @@ const LAST = captions.length - 1;
 const s = computed(() => Math.max(0, Math.min(props.stage, LAST)));
 const u = computed(() => user[s.value]);
 const a = computed(() => agent[s.value]);
+// How many steps the agent has taken in its current run: every reason, act
+// and observe since it was last triggered.
+const agentStep = computed(() => {
+  let n = 0;
+  for (let i = s.value; i >= 0; i--) {
+    const step = agent[i];
+    if (!step || step.phase === "idle" || step.phase === "final") break;
+    if (step.phase !== "trigger") n++;
+  }
+  return n;
+});
+
 // While the user's mind is elsewhere the agent is mid-loop; with the agent
 // hidden, its step-by-step captions would describe what nobody can see.
 const caption = computed(() =>
   props.hideAgentWorking &&
   u.value.phase === "meanwhile" &&
   a.value?.phase !== "final"
-    ? "...the agent is working"
+    ? `The agent is working... step ${agentStep.value}`
     : captions[s.value],
 );
 
@@ -354,8 +366,8 @@ const live = computed(() => !!a.value && a.value.phase !== "idle");
 const working = computed(() => live.value && a.value?.phase !== "final");
 
 // The registry's currentFlowName: which flow holds the user's attention. Each
-// entry takes effect from click n. Drawn over the magic box too, because it's
-// state the user can see in the app.
+// entry takes effect from click n. Part of the agent's inner workings, so the
+// magic box hides it.
 const flowChanges = [
   { n: 8, flow: "shopping" },
   { n: 19, flow: "" },
@@ -559,7 +571,7 @@ const flowChipW = computed(() => 16 * 5.7 + currentFlowName.value.length * 6.3 +
 
     <!-- which flow holds attention -->
     <g
-      v-if="currentFlowName"
+      v-if="currentFlowName && !hideAgentWorking"
       :key="currentFlowName"
       class="current-flow appear"
     >
