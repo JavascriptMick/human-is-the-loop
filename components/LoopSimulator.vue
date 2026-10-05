@@ -4,7 +4,9 @@ import { computed } from 'vue'
 // Walk through of the recipes4me in-app agent loop (real tool and flow
 // names), one click per step.
 // Edit the `steps` timeline to change the story; everything else is derived.
-const props = defineProps<{ stage: number }>()
+// `compact` is the thumbnail used on the code slides: one column, the last
+// exchange only, only the armed tools, and no verdict.
+const props = withDefaults(defineProps<{ stage: number; compact?: boolean }>(), { compact: false })
 
 type Speaker = 'user' | 'agent' | 'interrupt'
 interface Line { who: Speaker; text: string }
@@ -88,19 +90,19 @@ const steps: Step[] = [
 // One click past the last step shows the verdict.
 const LAST = steps.length - 1
 const i = computed(() => Math.max(0, Math.min(props.stage, LAST)))
-const showVerdict = computed(() => props.stage > LAST)
+const showVerdict = computed(() => !props.compact && props.stage > LAST)
 
 const current = computed(() => steps[i.value])
 const upTo = computed(() => steps.slice(0, i.value + 1))
 
-const transcript = computed(() => upTo.value.flatMap(s => s.say ?? []).slice(-4))
+const transcript = computed(() => upTo.value.flatMap(s => s.say ?? []).slice(props.compact ? -2 : -4))
 </script>
 
 <template>
-  <div class="sim">
+  <div class="sim" :class="{ compact: props.compact }">
     <section class="panel">
       <header>
-        <span class="kicker">In-app agent · recipes4me</span>
+        <span class="kicker">{{ props.compact ? 'From the demo' : 'In-app agent · recipes4me' }}</span>
         <span v-if="current.fired" class="fired">
           <span class="i-carbon-flash-filled" /> {{ current.fired }}
         </span>
@@ -123,10 +125,14 @@ const transcript = computed(() => upTo.value.flatMap(s => s.say ?? []).slice(-4)
 
       <div class="registry-wrap">
         <div class="side-label">tools the LLM can call right now</div>
-        <ToolRegistryPanel :armed="current.armed" :fired="current.fired" compact />
+        <ToolRegistryPanel v-if="!props.compact" :armed="current.armed" :fired="current.fired" compact />
+        <div v-else class="armed-list">
+          <span class="tool">+ global tools</span>
+          <span v-for="t in current.armed" :key="t" class="tool armed">{{ t }}</span>
+        </div>
       </div>
 
-      <div class="verdict good-v" :class="{ on: showVerdict }">
+      <div v-if="!props.compact" class="verdict good-v" :class="{ on: showVerdict }">
         The app's tools · the app's data · code runs the workflow · the user leads
       </div>
     </section>
@@ -221,6 +227,34 @@ header {
 .registry-wrap {
   border-top: 1px solid var(--border);
   padding-top: 0.4rem;
+}
+
+/* thumbnail */
+.compact .body {
+  grid-template-columns: 1fr;
+}
+.compact .transcript {
+  min-height: 7.5rem;
+}
+
+/* armed tools only, in the thumbnail */
+.armed-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+}
+.armed-list .tool {
+  font-family: var(--mono);
+  font-size: 0.6rem;
+  padding: 0.08rem 0.4rem;
+  border-radius: 4px;
+  color: var(--ink-faint);
+  border: 1px solid #1f3a30;
+}
+.armed-list .tool.armed {
+  color: var(--accent);
+  border-color: var(--accent-dim);
+  background: rgba(181, 227, 107, 0.08);
 }
 
 /* verdicts */

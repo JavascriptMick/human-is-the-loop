@@ -260,7 +260,476 @@ clicks: 4
 [click] Understand the user's intent: work out what problem the user is trying to solve, and only arm the tools for that. Don't make assumptions about what they're thinking.
 [click] Respond to changes but take notes: when the user's intent changes, follow it, but keep the state of what they had going so they don't start from scratch when they come back.
 [click] Be an expert: know the domain and the processes inside it. Known processes like cooking a recipe are written in code, so the LLM doesn't decide the next step. A generalist adds no value.
-[click] No magic: the tools are the app's own functions, over the app's data, driving the same screens. If the user can't do it in the app, the agent can't either. Let's look at responding to changes first.
+[click] No magic: the tools are the app's own functions, over the app's data, driving the same screens. If the user can't do it in the app, the agent can't either. So what code makes that carrots conversation happen?
+-->
+
+---
+layout: center
+---
+
+<SectionCard
+  kicker="Part 2"
+  title="The code"
+  subtitle="flutter_agent_framework · Flutter · Signals · Gemini"
+/>
+
+<!--
+[0:15] Now the code. All of this is real Dart from the framework and the recipes app, cut down to fit. We'll replay the carrots conversation from the cognitive loop, then the cooking and shopping switch from the demo. Each slide is tagged with the principle it implements.
+-->
+
+---
+clicks: 5
+---
+
+<div class="kicker">Architecture</div>
+
+# Four layers, and the LLM is just one call
+
+<ArchDiagram :stage="$clicks" />
+
+<!--
+[1:15]
+[click] Voice: the AudioCoordinator is one state machine covering wake word, speech to text and text to speech, with queues so listening and speaking never overlap.
+[click] AgentService runs each turn. It calls the LLM through LLMService with only the tools that are armed.
+[click] The IntentRegistry is a deliberately simple, synchronous store: flows, global tools, armed tools, current flow, interrupts.
+[click] Your app code: flows like CookingAssistant, with annotated tool methods and an orchestrator.
+[click] Flows change app state through the same Signals stores and GoRouter the UI uses, so the screen shows what the agent did.
+-->
+
+---
+clicks: 1
+class: dense
+---
+
+<div class="kicker">Principle 4 · No Magic</div>
+
+# The way in: a global tool
+
+<div class="grid grid-cols-[0.75fr_1.25fr] gap-6 mt-2">
+<div>
+  <UserAgentLoops compact :stage="[6, 8][$clicks]" />
+  <div class="text-xs dim mt-2">Slide 8, click {{ [6, 8][$clicks] }}: "Hey Recipes, add carrots to the list."</div>
+</div>
+
+````md magic-move {lines: true}
+```dart
+// shopping_list_assistant.dart - you write this
+@IntentTool(description: 'Add an item to the shopping list', isGlobal: true)
+Future<IntentResult> addShoppingListItem(
+  @Param('The item to add') String item,
+) async {
+  ...
+}
+
+@IntentTool(
+  description: 'Add a specific offered product to the cart by its id',
+  isGlobal: false,
+)
+Future<IntentResult> addProductToCartById(
+  @Param('The tm_product_id of the chosen product') int tmProductId,
+) async {
+  ...
+}
+```
+
+```dart
+// shopping_list_assistant.intent.g.dart - build_runner writes this
+agent.registerTool(
+  IntentToolRegistration(
+    toolName: 'addShoppingListItem',
+    description: '''Add an item to the shopping list''',
+    parametersSchema: {
+      'type': 'object',
+      'properties': <String, dynamic>{
+        'item': <String, dynamic>{
+          'type': 'string',
+          'description': '''The item to add''',
+        },
+      },
+      'required': ['item'],
+    },
+    handler: (args) => addShoppingListItem(args['item'] as String),
+    isGlobal: true,
+  ),
+);
+```
+````
+</div>
+
+<!--
+[1:15] Back to the carrots. "Hey Recipes, add carrots to the list." What can the agent actually do with that? It can only call tools, and a tool is just a method on the app's own class. The description is the prompt. isGlobal: true means it's always offered, like a main menu item. That's the only way into the agent. The second tool, addProductToCartById, is isGlobal: false. The LLM can't see it yet. Hold that thought.
+[click] build_runner turns the Dart signature into JSON Schema and generates the registration, so there are no hand-written schemas. This description is exactly what the agent "reasoned" over on slide 8: there's a tool that adds an item by name. So it calls it.
+-->
+
+---
+clicks: 6
+class: dense
+---
+
+<div class="kicker">Principle 3 · Be an expert</div>
+
+# The code asked, not the LLM
+
+<div class="grid grid-cols-[0.75fr_1.25fr] gap-6 mt-2">
+<div>
+  <UserAgentLoops compact :stage="[8, 9, 9, 10, 11, 11, 11][$clicks]" />
+  <div class="text-xs dim mt-2">Slide 8, click {{ [8, 9, 9, 10, 11, 11, 11][$clicks] }}: two kinds of carrots, so ask.</div>
+</div>
+
+```dart {all|4-6|8-11|13-25|15-18|19-23|24}
+Future<IntentResult> addShoppingListItem(String item) async {
+  _goToShopping(); // show the user the cart while acting
+
+  // favourites first: what the user actually buys
+  final candidates = _matchByName(item, favourites);
+  // ...falls back to product search, handles no match
+
+  if (candidates.length == 1) {
+    await _cartStore.addProductToCart(candidates.first);
+    return IntentResult.done(['Added ${_friendlyName(candidates.first)}.']);
+  }
+
+  _addCandidates = {for (final p in candidates) p.tm_product_id: p};
+  return IntentResult.withLLMContext(
+    userMessages: [
+      'I found a few options for $item: $spokenOptions. '
+      'Which would you like?',
+    ],
+    llmMessages: [
+      'Products found for "$item". Call addProductToCartById '
+      'with the chosen tm_product_id:',
+      for (final p in candidates) _describeCandidate(p),
+    ],
+    tools: ['addProductToCartById'], // arm exactly one follow-up
+  );
+}
+```
+</div>
+
+<!--
+[1:30] Here's the tool the agent called. It navigates to the cart first, using the same router the UI uses, so the user sees what's happening.
+[click] It looks in the user's favourites first: what they actually buy.
+[click] One match? Just add it. No conversation needed.
+[click] Two matches. On slide 8 I told you the agent reasoned "no way of knowing which one, better ask the user". That was a white lie. The LLM didn't decide that. This code did. The expert in the app knows that two products means a question, so it doesn't leave that to the model. It also takes notes: the candidates it offered.
+[click] The user hears friendly names.
+[click] The LLM hears the ids it will need, and an instruction.
+[click] And exactly one follow-up tool gets armed: addProductToCartById. That's the tool we couldn't see a minute ago.
+-->
+
+---
+clicks: 4
+class: dense
+---
+
+<div class="kicker">Principle 1 · Understand the user's intent</div>
+
+# Only what's armed can run
+
+<div class="grid grid-cols-[0.75fr_1.25fr] gap-6 mt-2">
+<div>
+  <UserAgentLoops compact :stage="[13, 16, 16, 17, 19][$clicks]" />
+  <div class="text-xs dim mt-2">Slide 8, click {{ [13, 16, 16, 17, 19][$clicks] }}: "The baby carrots."</div>
+</div>
+
+```dart {all|4-5|15-20|21-23|24-26}
+// AgentService: every tool call from the LLM lands here
+Future<IntentResult?> _executeIntentTool(String toolName, Map args) async {
+  final registration = _registry.registrationFor(toolName);
+  // Availability gate: only currently-advertised tools may execute
+  if (!_registry.isToolArmed(toolName)) return null;
+
+  final owningFlow = _registry.flowNameForTool(toolName);
+  final result = await registration!.handler(args);
+  await _applyIntentResult(result, owningFlow); // attention + next tools
+  return result;
+}
+
+// ShoppingListAssistant: the follow-up that addShoppingListItem armed
+Future<IntentResult> addProductToCartById(int tmProductId) async {
+  final product = _addCandidates[tmProductId];
+  if (product == null) {
+    return IntentResult.done([
+      "Sorry, that wasn't one of the options I offered.",
+    ]);
+  }
+  await _cartStore.addProductToCart(product);
+  await _settleCartContains(product.tm_product_id);
+  _addCandidates = {};
+  return IntentResult.done([
+    'Added ${_friendlyName(product)}. You have $_itemCountPhrase in your cart.',
+  ]);
+}
+```
+</div>
+
+<!--
+[1:15] The user says "the baby carrots". Out of context that means nothing. But the model now has the global tools plus one armed tool, and the ids of two products.
+[click] Every tool call goes through this gate in AgentService. If it isn't armed, it doesn't run, even if the model hallucinates a name or a stale turn arrives late.
+[click] And the tool checks its own notes: it only accepts a product it actually offered.
+[click] It adds the exact product, through the same CartStore the UI uses, and waits for the store to settle so the count is right.
+[click] IntentResult.done: say the result and disarm. That's the "Carrots have been added" on slide 8. Every turn of the agent's loop on slide 8 is one of these code paths.
+-->
+
+---
+clicks: 6
+class: '!py-6'
+---
+
+<h2 class="!mb-2 !font-800" style="color: var(--ink)">The same mechanics, with a long-running flow</h2>
+
+<div class="h-[440px]">
+  <LoopSimulator :stage="$clicks" />
+</div>
+
+<!--
+[1:30] Carrots was a short loop: one question, one answer. Cooking is long. Let's replay the demo from the agent's side.
+[click] "let's cook the satay stir-fry". startCooking is a global tool, just like addShoppingListItem. The cooking flow now holds attention and arms exactly two tools.
+[click] "I'm ready". readyToCook runs, the flow reads step 1 and sets a timer. Only stepComplete is armed now.
+[click] 15 minutes later, the app itself interrupts. No user input, but it's still code in the app deciding to speak.
+[click] I get distracted and ask to add satay sauce to the shopping list. Shopping takes my attention, and cooking is backgrounded with its state kept.
+[click] "back to cooking", switchToFlow, and we pick up at step 1.
+[click] Three moments here need code: the flow driving the steps, the interrupt, and the switch away and back.
+-->
+
+---
+clicks: 4
+class: dense
+---
+
+<div class="kicker">Principle 3 · Be an expert</div>
+
+# A flow drives the steps and the screen
+
+<div class="grid grid-cols-[0.75fr_1.25fr] gap-6 mt-2">
+<div class="h-[380px]">
+  <LoopSimulator compact :stage="[1, 1, 1, 2, 2][$clicks]" />
+</div>
+
+```dart {all|2-4|6-13|15-23|24-27}
+IntentResult _orchestrate(CookingAssistantContext ctx, List<String> messages) {
+  // show the user the cooking assistant screen while orchestrating
+  final path = appRouter.routerDelegate.currentConfiguration.uri.path;
+  if (path != '/recipes/assistant') appRouter.go('/recipes/assistant');
+
+  if (ctx.is_in_pre_cook) {
+    orchestratedStepIndex.value = -1; // signal: scroll to ingredients
+    return IntentResult.withNextTools(
+      [...messages, "Let's cook ${ctx.recipe_name}.",
+       'Would you like me to read out the ingredients, or are you ready?'],
+      ['readIngredients', 'readyToCook'],
+    );
+  }
+
+  orchestratedStepIndex.value = ctx.current_step_index; // highlight step
+  final stepAtSet = ctx.current_step;
+  if (!identical(_timerStep, stepAtSet)) {
+    _stepTimer?.cancel(); // previous step's timer is obsolete
+    if (stepAtSet.timerDuration != null) {
+      _stepTimer = Timer(stepAtSet.timerDuration!,
+          () => _onStepTimerFired(ctx, stepAtSet));
+    }
+  }
+  return IntentResult.withNextTools(
+    [...messages, 'next step', ctx.current_step.prompt],
+    ['stepComplete'],
+  );
+}
+```
+</div>
+
+<!--
+[1:30] Carrots needed one question. Cooking needs a process, and a process is something the expert writes in code. Every cooking tool handler changes the context and then calls this orchestrator. It's re-entrant: it looks at the context and works out where we are.
+[click] It navigates with the same router the UI uses.
+[click] Before cooking: update a signal so the screen scrolls, ask one question, and arm two tools. That's "read out the ingredients, or ready to cook?".
+[click] "I'm ready": highlight the step, and set a timer if the step has one.
+[click] Then say the step and arm stepComplete. The LLM never decides what step comes next.
+-->
+
+---
+clicks: 2
+class: dense
+---
+
+<div class="kicker">Principle 3 · Be an expert</div>
+
+# The app speaks first
+
+<div class="grid grid-cols-[0.75fr_1.25fr] gap-6 mt-2">
+<div class="h-[380px]">
+  <LoopSimulator compact :stage="3" />
+</div>
+
+<div>
+
+```dart {all|3|4-15}
+void _onStepTimerFired(CookingAssistantContext ctx, CookingStep firingStep) {
+  // Ignore irrelevant or superseded timer events
+  if (identical(ctx, _context) && identical(firingStep, ctx.current_step)) {
+    _timerInterruptStream.add(
+      InterruptIntent(
+        flowName: flowName,
+        result: IntentResult.withNextTools(
+          [firingStep.timerPrompt ??
+              "It's been ${_speakDuration(firingStep.timerDuration!)} "
+              '- have you checked the ${firingStep.name}?'],
+          ['stepComplete'], // re-arm the same follow-up
+        ),
+        marker: '[timer elapsed: ${firingStep.name}]',
+      ),
+    );
+  }
+}
+```
+
+<div class="mt-4 card text-sm">
+Proactive, but <strong>not autonomous</strong>: the flow decides when to speak, and AgentService drains the interrupt queue when it's safe to.
+</div>
+
+</div>
+</div>
+
+<!--
+[1:00] The timer from the last slide fires. There was no user input, but it's still code in the app deciding to speak.
+[click] Only if the timer still belongs to the current step. If the user has moved on, it stays quiet.
+[click] An interrupt is just an IntentResult that arrived without a tool call. AgentService applies it the same way, which moves attention back to cooking and re-arms stepComplete.
+-->
+
+---
+clicks: 3
+class: dense
+---
+
+<div class="kicker">Principle 2 · Respond to changes but take notes</div>
+
+# Switch away, keep notes, come back
+
+<div class="grid grid-cols-[0.75fr_1.25fr] gap-6 mt-2">
+<div class="h-[380px]">
+  <LoopSimulator compact :stage="[4, 4, 4, 5][$clicks]" />
+</div>
+
+<div>
+
+```dart {all|1-6|8-14|16-22}
+// AgentService: the ONLY place attention moves
+Future<void> _transferAttention(String? newFlowName) async {
+  if (newFlowName == null || newFlowName == _registry.currentFlowName) return;
+  await _registry.currentFlow?.backgroundThisFlow(); // context is kept
+  _registry.setCurrentFlow(newFlowName);
+}
+
+// every LLM turn: each flow summarises itself
+final sessionPrompts = [
+  if (flows.currentFlow case final flow?)
+    'Current Workflow: ${flow.currentFlowContextSummary}',
+  ...flows.otherActiveFlows.map((flow) =>
+      'Other In Progress Workflow: ${flow.switchToFlowContextSummary}'),
+];
+
+// "back to cooking": switchToFlow('cooking') calls enterFlow
+Future<IntentResult> enterFlow(IntentFlow flow) async {
+  await _transferAttention(flow.flowName);
+  final result = await flow.resumeThisFlow(); // cooking: _orchestrate(ctx, [])
+  _registry.setIntentTools(result.requestedTools);
+  return result;
+}
+```
+
+<div class="text-xs dim mt-2">
+Every flow implements <code>IntentFlow</code>: a name, two summaries, and <code>resumeThisFlow</code> / <code>backgroundThisFlow</code> / <code>cancelThisFlow</code>.
+</div>
+
+</div>
+</div>
+
+<!--
+[1:30] Mid-recipe, "add satay sauce to the list". That's addShoppingListItem again, the same global tool as the carrots. It's owned by the shopping flow, so attention moves.
+[click] Attention moves in exactly one place. The outgoing flow is backgrounded exactly once, and cooking keeps its context: recipe, step and timer.
+[click] How does the model know cooking is still going while we shop? Every turn, every flow writes its own one-line summary into the prompt.
+[click] "Back to cooking" is the switchToFlow system tool. It moves attention and calls resumeThisFlow, and for cooking that's the same re-entrant orchestrator. We pick up at step 1 because the notes were kept. Every flow implements this small IntentFlow interface: a name, two summaries, and resume, background and cancel.
+-->
+
+---
+
+# Learnings
+
+<div class="grid grid-cols-2 gap-4 mt-6">
+  <div v-click class="card"><strong>You need a killer use case</strong><br/><span class="dim">Users are wary of AI. It has to earn its place. For me that was hands-free cooking.</span></div>
+  <div v-click class="card"><strong>Agent UX is hard to get right</strong><br/><span class="dim">Keeping it fluid, arming the right tools, and deciding when to orchestrate vs leave it in the agent loop.</span></div>
+  <div v-click class="card"><strong>On-device models didn't make it</strong><br/><span class="dim">Gemini was accurate but too slow, Function Gemma and Needle 2 were fast enough but inaccurate.</span></div>
+  <div v-click class="card"><strong>Cross platform wake word is tricky</strong><br/><span class="dim">The good solutions are paid. I rolled my own with sherpa_onnx.</span></div>
+</div>
+
+<!--
+[1:30] A few honest lessons from building this.
+[click] You need a killer use case to justify the hassle. Users are wary of AI. For me, hands-free cooking was the one that made it worth it.
+[click] UX with agents is hard to get right. Making it fluid, giving it the right tool calls, and knowing when to orchestrate in code vs leave it in the agent loop is tricky.
+[click] I couldn't get on-device models to work. Tried Gemini on device, tried tiny models - they were too dumb.
+[click] Wake word integration is tricky. You have to pay for the good solutions. I rolled my own in the end, and it's ok.
+[click] Next, I'll definitely look at integrating Jev-style models for workflows with simple decision points.
+-->
+
+---
+layout: center
+class: text-center
+---
+
+# Thank you
+
+<div class="dim mt-4">Human <span class="accent">IS</span> the loop</div>
+
+<div class="mt-10 flex justify-center">
+  <QrCode url="https://acedant.ai" :size="140" />
+</div>
+
+<!--
+[0:30] Questions.
+-->
+
+---
+class: dense
+---
+
+<div class="kicker">Appendix</div>
+
+# On-device agent proof of concept
+
+<table class="poc-table mt-3">
+  <thead>
+    <tr><th>#</th><th>Model / runtime</th><th>Accuracy</th><th>s/turn</th><th>Notes</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>1</td><td>Gemma 4 E2B, flutter_gemma, shared session</td><td>62%</td><td>6.2</td><td class="dim">Late turns stopped calling tools; "10 min" became 9</td></tr>
+    <tr><td>2</td><td>Gemma 4 E2B, native LiteRT-LM, per-turn</td><td class="accent">100%</td><td>11</td><td class="dim">16.8 s cold load</td></tr>
+    <tr><td>3</td><td>Gemma 4 E2B, flutter_gemma, per-turn</td><td class="accent">100%</td><td>10.2</td><td class="dim">Run 1's 62% was mostly the shared session, not the wrapper</td></tr>
+    <tr class="faint"><td>4</td><td>Gemma 4 E4B on iPhone</td><td>-</td><td>-</td><td>Never run</td></tr>
+    <tr><td>5</td><td>Gemma 4 E2B, native, shared session</td><td>95%</td><td>5.8</td><td class="dim">Best Gemma latency, still about 3x the bar</td></tr>
+    <tr><td>6</td><td>LFM2.5-2.6B, LEAP SDK</td><td>76%</td><td class="danger">74</td><td class="dim">LEAP on Android runs on CPU only, with no prefix cache</td></tr>
+    <tr><td>7</td><td>Needle 2 (45M)</td><td>62%</td><td>1.3</td><td class="dim">21 MB RAM, but --serve wedges and the LoRA tune made it worse</td></tr>
+    <tr class="best"><td>8</td><td>Qwen3.5-0.8B, llama-server over adb</td><td>81%</td><td class="accent">1.95</td><td class="dim">The only run under 2 s. Inside the app: 76% at 18.4 s</td></tr>
+    <tr><td>9</td><td>Granite 4.0 Nano 1B, llama.cpp in-app</td><td>81%</td><td class="danger">30</td><td class="dim">Cleanest output (0 malformed), far too slow</td></tr>
+    <tr><td>10</td><td>FunctionGemma 270M base</td><td class="danger">33%</td><td>0.98</td><td class="dim">Fast and poor</td></tr>
+    <tr><td>11</td><td>FunctionGemma 270M, LoRA-tuned</td><td class="danger">25%</td><td>3.7</td><td class="dim">App suite</td></tr>
+    <tr><td>12</td><td>Same tune at F16</td><td class="danger">25%</td><td>2.4</td><td class="dim">Quantisation wasn't the problem; the model's ceiling was</td></tr>
+  </tbody>
+</table>
+
+<div class="mt-3 text-sm dim">Nothing hit accurate <em>and</em> fast enough. The models that were accurate were too slow, and the fast ones weren't accurate.</div>
+
+<style>
+.poc-table { width: 100%; font-size: 0.68rem; border-collapse: collapse; }
+.poc-table th { text-align: left; font-family: var(--mono); font-size: 0.6rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--accent); border-bottom: 1px solid var(--border); padding: 0.3rem 0.5rem; }
+.poc-table td { padding: 0.22rem 0.5rem; border-bottom: 1px solid var(--bg-2); }
+.poc-table td:nth-child(3), .poc-table td:nth-child(4), .poc-table th:nth-child(3), .poc-table th:nth-child(4) { text-align: right; font-family: var(--mono); white-space: nowrap; }
+.poc-table tr.best { background: rgba(181, 227, 107, 0.08); }
+.poc-table tr.faint td { color: var(--ink-faint); }
+</style>
+
+<!--
+Appendix, for Q&A. Results from trying to run the agent fully on device.
+Gemma 4 E2B got to 100% accuracy with a fresh session per turn, but at 10-11 s per turn. Sharing a session made it faster but less accurate.
+The only run under 2 s per turn was Qwen3.5-0.8B over adb, and inside the app that dropped to 76% at 18.4 s.
+Tiny function-calling models were fast but too dumb, and LoRA tuning didn't fix it.
 -->
 
 ---
@@ -298,60 +767,6 @@ clicks: 2
 [1:00] People don't do one thing at a time, especially in a kitchen.
 [click] While the rice simmers, the user starts planning next week. Cooking goes to the background, still at step 3.
 [click] The agent's job is to keep up with the user.
--->
-
----
-clicks: 6
-class: '!py-6'
----
-
-<h2 class="!mb-2 !font-800" style="color: var(--ink)">The demo, from the agent's side</h2>
-
-<div class="h-[440px]">
-  <LoopSimulator :stage="$clicks" />
-</div>
-
-<!--
-[2:30] Let's replay the demo from the agent's side.
-[click] "let's cook the satay stir-fry". The LLM can only see the global tools, so it picks startCooking. The cooking flow now holds attention and has armed exactly two tools.
-[click] "I'm ready". readyToCook runs, the flow reads step 1 and sets a timer. Only stepComplete is armed now.
-[click] 15 minutes later, the app itself interrupts. No user input, but it's still code in the app deciding to speak.
-[click] I get distracted and ask to add satay sauce to the shopping list. Shopping takes my attention, and cooking is backgrounded with its state kept.
-[click] "back to cooking", switchToFlow, and we pick up at step 1.
-[click] The whole thing in one line. All four principles are in there. Now let's see how it's built.
--->
-
----
-layout: center
----
-
-<SectionCard
-  kicker="Part 2"
-  title="The code"
-  subtitle="flutter_agent_framework · Flutter · Signals · Gemini"
-/>
-
-<!--
-[0:15] Now the code. All of this is real Dart from the framework and the recipes app, cut down to fit. Each slide is tagged with the principle it implements.
--->
-
----
-clicks: 5
----
-
-<div class="kicker">Architecture</div>
-
-# Four layers, and the LLM is just one call
-
-<ArchDiagram :stage="$clicks" />
-
-<!--
-[1:15]
-[click] Voice: the AudioCoordinator is one state machine covering wake word, speech to text and text to speech, with queues so listening and speaking never overlap.
-[click] AgentService runs each turn. It calls the LLM through LLMService with only the tools that are armed.
-[click] The IntentRegistry is a deliberately simple, synchronous store: flows, global tools, armed tools, current flow, interrupts.
-[click] Your app code: flows like CookingAssistant, with annotated tool methods and an orchestrator.
-[click] Flows change app state through the same Signals stores and GoRouter the UI uses, so the screen shows what the agent did.
 -->
 
 ---
@@ -395,281 +810,6 @@ FutureOr<IntentResult> startCooking(@Param('The Recipe Id to cook') int recipe_i
 [click] Already cooking something? Don't let the LLM guess.
 [click] Say one thing to the user and something else to the LLM, and arm exactly two tools. Whatever the user says next, the model can only continue or restart.
 [click] Otherwise, start the recipe.
--->
-
----
-class: dense
----
-
-<div class="kicker">Principle 1 · Understand the user's intent</div>
-
-# The LLM can only call what's armed
-
-<div class="grid grid-cols-[0.8fr_1.2fr] gap-6 mt-2">
-<div class="flex flex-col gap-2 text-sm">
-  <div class="card !py-2"><span class="kicker">1 · input</span><br/>voice or typed text → <code>processUserInput</code></div>
-  <div class="card !py-2"><span class="kicker">2 · fast path</span><br/>regex on armed tools, e.g. "next" → no LLM call</div>
-  <div class="card !py-2"><span class="kicker">3 · LLM</span><br/>system prompt + flow summaries + history + <strong>armed tools only</strong></div>
-  <div class="card !py-2"><span class="kicker">4 · gate</span><br/>reject anything not armed</div>
-  <div class="card !py-2"><span class="kicker">5 · apply</span><br/>move attention, arm the next tools, speak</div>
-</div>
-
-```dart {all|7-15|17-21}
-Future<IntentResult?> _executeIntentTool(
-  String toolName,
-  Map<String, dynamic> args,
-) async {
-  final registration = _registry.registrationFor(toolName);
-
-  // Availability gate: only currently-advertised tools may execute.
-  // The LLM is constrained to the advertised set already; this rejects
-  // stale calls from concurrent turns, direct-execution bypasses and
-  // provider glitches. Intents may therefore assume an intent tool
-  // only runs while its flow is armed.
-  if (!_registry.isToolArmed(toolName)) {
-    _log.warning('Tool $toolName not currently available - rejecting');
-    return null;
-  }
-
-  final owningFlow = _registry.flowNameForTool(toolName);
-  final result = await registration!.handler(args);
-
-  await _applyIntentResult(result, owningFlow);
-  return result;
-}
-```
-</div>
-
-<!--
-[1:30] AgentService, one turn, in five steps.
-[click] The availability gate. Even if the model hallucinates a tool name, or a stale turn arrives late, it can't run anything that isn't armed. This is where the armed set is enforced in code.
-[click] Then apply the result: attention goes to whichever flow owns the tool, and that flow's requested tools get armed.
--->
-
----
-class: dense
----
-
-<div class="kicker">Principle 2 · Respond to changes but take notes</div>
-
-# Attention moves in exactly one place
-
-<div class="grid grid-cols-[1.25fr_1fr] gap-6">
-
-```dart {1-12|14-23}
-// every LLM turn: tell the model what's going on
-final sessionPrompts = [
-  if (flows.currentFlow case final flow?)
-    "Current Workflow: ${flow.currentFlowContextSummary}",
-  ...flows.otherActiveFlows.map(
-    (flow) =>
-        "Other In Progress Workflow: ${flow.switchToFlowContextSummary}",
-  ),
-  ...flows.inactiveFlows.map(
-    (flow) => "Inactive workflows: ${flow.flowName}",
-  ),
-];
-
-// the ONLY place attention moves
-Future<void> _transferAttention(String? newFlowName) async {
-  if (newFlowName == null ||
-      newFlowName.isEmpty ||
-      newFlowName == _registry.currentFlowName) {
-    return;
-  }
-  await _registry.currentFlow?.backgroundThisFlow();
-  _registry.setCurrentFlow(newFlowName);
-}
-```
-
-<div class="flex flex-col gap-4">
-  <AttentionStack
-    :flows="[
-      { name: 'shopping', state: 'current', summary: '1 item added' },
-      { name: 'cooking', state: 'background', summary: 'cooking Quick Pork Satay, step 1 of 8' },
-      { name: 'whats for dinner', state: 'inactive' },
-    ]"
-  />
-  <div class="card text-sm">
-    <div class="kicker">system tools</div>
-    <div class="mt-1"><code>switchToFlow</code> and <code>cancelFlow</code> are generated each turn from live flow state. Their enums only list flows that are actually in progress.</div>
-  </div>
-</div>
-
-</div>
-
-<!--
-[1:30] How does the model know about the cooking session while we're shopping? Every turn it gets a summary of every flow, written by the flow itself.
-[click] Attention only moves in one place. The outgoing flow is always backgrounded exactly once: tool execution, interrupts and switchToFlow all go through here.
--->
-
----
-
-<div class="kicker">Principle 3 · Be an Expert</div>
-
-# A flow owns one user intent
-
-```dart {all|2|3-4|5|7-12}
-abstract class IntentFlow {
-  String get flowName;                    // 'cooking', 'shopping'
-  String get switchToFlowContextSummary;  // one-liner when it's in the background
-  String get currentFlowContextSummary;   // one-liner when it's current
-  bool get flowIsActive;                  // dirty context? ("in progress: step 3")
-
-  /// Flip back to this flow using its saved context, no mutation
-  FutureOr<IntentResult> resumeThisFlow();
-  /// Attention is moving away: drop transient state (pending confirmations)
-  FutureOr<void> backgroundThisFlow();
-  /// The user abandoned it: drop ALL context so flowIsActive goes false
-  FutureOr<void> cancelThisFlow();
-}
-```
-
-<div v-click="5" class="mt-4 dim">
-A flow is a <strong>re-entrant orchestrator</strong> for one user intent. It's related to sagas, actors, dialogue policies and FSMs.
-</div>
-
-<!--
-[1:00] Every flow implements this.
-[click] Name. [click] Two summaries: these are how the LLM knows about flows it isn't currently in. [click] flowIsActive: conventionally `_context != null`.
-[click] Resume, background, cancel: the lifecycle of the user's attention.
--->
-
----
-class: dense
----
-
-<div class="kicker">Principle 3 · Be an Expert</div>
-
-# The orchestrator drives the steps and the screen
-
-```dart {all|2-4|6-13|14-23|24-27}
-IntentResult _orchestrate(CookingAssistantContext ctx, List<String> messages) {
-  // agent 'shows' the user the cooking assistant screen while orchestrating
-  final path = appRouter.routerDelegate.currentConfiguration.uri.path;
-  if (path != '/recipes/assistant') appRouter.go('/recipes/assistant');
-
-  if (ctx.is_in_pre_cook) {
-    orchestratedStepIndex.value = -1;          // signal → screen scrolls to ingredients
-    return IntentResult.withNextTools(
-      [...messages, "Let's cook ${ctx.recipe_name}.",
-       'Would you like me to read out the ingredients, or are you ready to cook?'],
-      ['readIngredients', 'readyToCook'],
-    );
-  }
-
-  orchestratedStepIndex.value = ctx.current_step_index;   // highlight the step
-  final stepAtSet = ctx.current_step;
-  if (!identical(_timerStep, stepAtSet)) {
-    _stepTimer?.cancel();                      // previous step's timer is obsolete
-    _timerStep = null;
-    if (stepAtSet.timerDuration != null) {
-      _stepTimer = Timer(stepAtSet.timerDuration!, () => _onStepTimerFired(ctx, stepAtSet));
-      _timerStep = stepAtSet;
-    }
-  }
-  return IntentResult.withNextTools(
-    [...messages, ctx.current_step_index == 0 ? 'First step' : 'next step', ctx.current_step.prompt],
-    ['stepComplete'],
-  );
-}
-```
-
-<!--
-[1:30] The heart of a flow. Every tool handler changes the context and then calls this. It's re-entrant: it looks at the context and works out where we are.
-[click] It navigates, with the same router the UI uses.
-[click] Pre-cook: update a signal so the screen scrolls, ask one question, arm two tools.
-[click] Cooking: highlight the step and set a timer if the step has one.
-[click] Then say the step and arm stepComplete. The LLM never decides what step comes next.
--->
-
----
-
-<div class="kicker">Principle 3 · Be an Expert</div>
-
-# Interrupts: the app speaks first
-
-```dart {all|3|4-17}
-void _onStepTimerFired(CookingAssistantContext ctx, CookingStep firingStep) {
-  // Ignore irrelevant or superseded timer events
-  if (identical(ctx, _context) && identical(firingStep, ctx.current_step)) {
-    _timerInterruptStream.add(
-      InterruptIntent(
-        flowName: flowName,
-        result: IntentResult.withNextTools(
-          [
-            firingStep.timerPrompt ??
-                "It's been ${_speakDuration(firingStep.timerDuration!)} "
-                '- have you checked the ${firingStep.name}?',
-          ],
-          ['stepComplete'],     // re-arm the same follow-up; the reply resolves it
-        ),
-        marker: '[timer elapsed: ${firingStep.name}]',
-      ),
-    );
-  }
-}
-```
-
-<div v-click="3" class="mt-4 card">
-Proactive, but <strong>not autonomous</strong>: the flow decides when to speak, and AgentService drains the interrupt queue when it's safe to.
-</div>
-
-<!--
-[1:00] Sometimes the agent should speak first. The timer fires, the flow pushes an InterruptIntent, and AgentService speaks it when nothing else is going on. Attention moves back to cooking.
-[click] Only if the timer still belongs to the current step.
-[click] An interrupt is just an IntentResult without a tool call, handled the same way.
--->
-
----
-
-<div class="kicker">Principle 4 · No Magic</div>
-
-# A tool is just an annotated app method
-
-````md magic-move {lines: true}
-```dart
-// cooking_assistant.dart - you write this
-@IntentTool(
-  description:
-      'Start cooking a new recipe. Requires a recipe_id. Do not call this '
-      'if a cooking workflow is already in progress.',
-  isGlobal: true,
-)
-FutureOr<IntentResult> startCooking(
-  @Param('The Recipe Id to cook') int recipe_id,
-) {
-  ...
-}
-```
-
-```dart
-// cooking_assistant.intent.g.dart - build_runner writes this
-agent.registerTool(
-  IntentToolRegistration(
-    toolName: 'startCooking',
-    description:
-        '''Start cooking a new recipe. Requires a recipe_id. Do not call this if a cooking workflow is already in progress.''',
-    parametersSchema: {
-      'type': 'object',
-      'properties': <String, dynamic>{
-        'recipe_id': <String, dynamic>{
-          'type': 'integer',
-          'description': '''The Recipe Id to cook''',
-        },
-      },
-      'required': ['recipe_id'],
-    },
-    handler: (args) => startCooking((args['recipe_id'] as num).toInt()),
-    isGlobal: true,
-  ),
-);
-```
-````
-
-<!--
-[1:30] A tool is just a method on your class. The description is the prompt. isGlobal: true means it's always offered, like a main menu item. isGlobal: false means it's only offered when a flow arms it.
-[click] build_runner turns Dart types into JSON Schema and generates the registration. No hand-written schemas, and the analyzer checks everything.
 -->
 
 ---
@@ -765,87 +905,4 @@ agent.registryChanges;
 
 <!--
 [1:00] Voice is one way in, not the only way. A "Cook this recipe?" button calls directExecuteTool, so it runs the same flow with no LLM call and no tokens. Typing and flow chips go into the same turn loop.
--->
-
----
-
-# Learnings
-
-<div class="grid grid-cols-2 gap-4 mt-6">
-  <div v-click class="card"><strong>You need a killer use case</strong><br/><span class="dim">Users are wary of AI. It has to earn its place. For me that was hands-free cooking.</span></div>
-  <div v-click class="card"><strong>Agent UX is hard to get right</strong><br/><span class="dim">Keeping it fluid, arming the right tools, and deciding when to orchestrate vs leave it in the agent loop.</span></div>
-  <div v-click class="card"><strong>On-device models didn't make it</strong><br/><span class="dim">Gemini was accurate but too slow, Function Gemma and Needle 2 were fast enough but inaccurate.</span></div>
-  <div v-click class="card"><strong>Cross platform wake word is tricky</strong><br/><span class="dim">The good solutions are paid. I rolled my own with sherpa_onnx.</span></div>
-</div>
-
-<!--
-[1:30] A few honest lessons from building this.
-[click] You need a killer use case to justify the hassle. Users are wary of AI. For me, hands-free cooking was the one that made it worth it.
-[click] UX with agents is hard to get right. Making it fluid, giving it the right tool calls, and knowing when to orchestrate in code vs leave it in the agent loop is tricky.
-[click] I couldn't get on-device models to work. Tried Gemini on device, tried tiny models - they were too dumb.
-[click] Wake word integration is tricky. You have to pay for the good solutions. I rolled my own in the end, and it's ok.
-[click] Next, I'll definitely look at integrating Jev-style models for workflows with simple decision points.
--->
-
----
-layout: center
-class: text-center
----
-
-# Thank you
-
-<div class="dim mt-4">Human <span class="accent">IS</span> the loop</div>
-
-<div class="mt-10 flex justify-center">
-  <QrCode url="https://acedant.ai" :size="140" />
-</div>
-
-<!--
-[0:30] Questions.
--->
-
----
-class: dense
----
-
-<div class="kicker">Appendix</div>
-
-# On-device agent proof of concept
-
-<table class="poc-table mt-3">
-  <thead>
-    <tr><th>#</th><th>Model / runtime</th><th>Accuracy</th><th>s/turn</th><th>Notes</th></tr>
-  </thead>
-  <tbody>
-    <tr><td>1</td><td>Gemma 4 E2B, flutter_gemma, shared session</td><td>62%</td><td>6.2</td><td class="dim">Late turns stopped calling tools; "10 min" became 9</td></tr>
-    <tr><td>2</td><td>Gemma 4 E2B, native LiteRT-LM, per-turn</td><td class="accent">100%</td><td>11</td><td class="dim">16.8 s cold load</td></tr>
-    <tr><td>3</td><td>Gemma 4 E2B, flutter_gemma, per-turn</td><td class="accent">100%</td><td>10.2</td><td class="dim">Run 1's 62% was mostly the shared session, not the wrapper</td></tr>
-    <tr class="faint"><td>4</td><td>Gemma 4 E4B on iPhone</td><td>-</td><td>-</td><td>Never run</td></tr>
-    <tr><td>5</td><td>Gemma 4 E2B, native, shared session</td><td>95%</td><td>5.8</td><td class="dim">Best Gemma latency, still about 3x the bar</td></tr>
-    <tr><td>6</td><td>LFM2.5-2.6B, LEAP SDK</td><td>76%</td><td class="danger">74</td><td class="dim">LEAP on Android runs on CPU only, with no prefix cache</td></tr>
-    <tr><td>7</td><td>Needle 2 (45M)</td><td>62%</td><td>1.3</td><td class="dim">21 MB RAM, but --serve wedges and the LoRA tune made it worse</td></tr>
-    <tr class="best"><td>8</td><td>Qwen3.5-0.8B, llama-server over adb</td><td>81%</td><td class="accent">1.95</td><td class="dim">The only run under 2 s. Inside the app: 76% at 18.4 s</td></tr>
-    <tr><td>9</td><td>Granite 4.0 Nano 1B, llama.cpp in-app</td><td>81%</td><td class="danger">30</td><td class="dim">Cleanest output (0 malformed), far too slow</td></tr>
-    <tr><td>10</td><td>FunctionGemma 270M base</td><td class="danger">33%</td><td>0.98</td><td class="dim">Fast and poor</td></tr>
-    <tr><td>11</td><td>FunctionGemma 270M, LoRA-tuned</td><td class="danger">25%</td><td>3.7</td><td class="dim">App suite</td></tr>
-    <tr><td>12</td><td>Same tune at F16</td><td class="danger">25%</td><td>2.4</td><td class="dim">Quantisation wasn't the problem; the model's ceiling was</td></tr>
-  </tbody>
-</table>
-
-<div class="mt-3 text-sm dim">Nothing hit accurate <em>and</em> fast enough. The models that were accurate were too slow, and the fast ones weren't accurate.</div>
-
-<style>
-.poc-table { width: 100%; font-size: 0.68rem; border-collapse: collapse; }
-.poc-table th { text-align: left; font-family: var(--mono); font-size: 0.6rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--accent); border-bottom: 1px solid var(--border); padding: 0.3rem 0.5rem; }
-.poc-table td { padding: 0.22rem 0.5rem; border-bottom: 1px solid var(--bg-2); }
-.poc-table td:nth-child(3), .poc-table td:nth-child(4), .poc-table th:nth-child(3), .poc-table th:nth-child(4) { text-align: right; font-family: var(--mono); white-space: nowrap; }
-.poc-table tr.best { background: rgba(181, 227, 107, 0.08); }
-.poc-table tr.faint td { color: var(--ink-faint); }
-</style>
-
-<!--
-Appendix, for Q&A. Results from trying to run the agent fully on device.
-Gemma 4 E2B got to 100% accuracy with a fresh session per turn, but at 10-11 s per turn. Sharing a session made it faster but less accurate.
-The only run under 2 s per turn was Qwen3.5-0.8B over adb, and inside the app that dropped to 76% at 18.4 s.
-Tiny function-calling models were fast but too dumb, and LoRA tuning didn't fix it.
 -->

@@ -14,7 +14,7 @@ const globals = ['startCooking', 'startChoosingDinner', 'startPlanning', 'addSho
 
 const flowTools: Record<string, string[]> = {
   cooking: ['readIngredients', 'readyToCook', 'stepComplete', 'continueCooking', 'restartCooking'],
-  shopping: ['confirmClearAll', 'cancelClearAll', 'removeCartItemById'],
+  shopping: ['addProductToCartById', 'confirmClearAll', 'cancelClearAll', 'removeCartItemById'],
 }
 
 const system = ['switchToFlow', 'cancelFlow']

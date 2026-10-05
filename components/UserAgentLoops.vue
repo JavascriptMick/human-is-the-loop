@@ -5,7 +5,12 @@ import { computed } from "vue";
 // inside one of its steps. One step per click. Left: the real world (the
 // fridge). Centre: the user and their internal monologue. Right: the agent.
 // Colours match ReActAgent: reason purple, act red, observe teal, answer lime.
-const props = withDefaults(defineProps<{ stage?: number }>(), { stage: 99 });
+// `compact` is the thumbnail used on the code slides: it crops away the real
+// world, the mental-load pills and the caption so the two loops fill the frame.
+const props = withDefaults(
+  defineProps<{ stage?: number; compact?: boolean }>(),
+  { stage: 99, compact: false },
+);
 
 type Phase =
   | "trigger"
@@ -195,6 +200,7 @@ const arcs = (g: Ring, gap: number) =>
 // label follows the latest one.
 interface Link {
   steps: { n: number; label: string }[];
+  world?: boolean;
   kind: string;
   d: string;
   lx: number;
@@ -203,6 +209,7 @@ interface Link {
 const links: Link[] = [
   {
     steps: [{ n: 3, label: "open the fridge" }],
+    world: true,
     kind: "act",
     d: "M356,156 L190,156",
     lx: 273,
@@ -210,6 +217,7 @@ const links: Link[] = [
   },
   {
     steps: [{ n: 4, label: "look for carrots" }],
+    world: true,
     kind: "obs",
     d: "M190,200 L328,200",
     lx: 262,
@@ -243,11 +251,18 @@ function linkState(l: Link) {
   if (!st) return "off";
   return st.n === s.value ? "current" : "past";
 }
+const shownLinks = computed(() =>
+  props.compact ? links.filter((l) => !l.world) : links,
+);
 const live = computed(() => !!a.value && a.value.phase !== "idle");
 </script>
 
 <template>
-  <svg viewBox="0 0 960 436" class="loops">
+  <svg
+    :viewBox="compact ? '230 22 730 362' : '0 0 960 436'"
+    class="loops"
+    :class="{ compact }"
+  >
     <defs>
       <marker
         v-for="k in ['act', 'obs', 'final', 'user', 'agent']"
@@ -265,12 +280,18 @@ const live = computed(() => !!a.value && a.value.phase !== "idle");
     </defs>
 
     <!-- headings -->
-    <text x="0" y="16" class="heading">THE REAL WORLD</text>
-    <text x="430" y="16" class="heading" text-anchor="middle">THE USER</text>
-    <text x="684" y="16" class="heading">THE APP</text>
+    <g v-if="!compact">
+      <text x="0" y="16" class="heading">THE REAL WORLD</text>
+      <text x="430" y="16" class="heading" text-anchor="middle">THE USER</text>
+      <text x="684" y="16" class="heading">THE APP</text>
+    </g>
 
     <!-- the real world: a fridge with no carrots in it -->
-    <g class="fridge" :class="{ open: s >= 3, looked: s === 4 }">
+    <g
+      v-if="!compact"
+      class="fridge"
+      :class="{ open: s >= 3, looked: s === 4 }"
+    >
       <rect x="40" y="70" width="140" height="230" rx="12" class="body" />
       <line x1="40" y1="130" x2="180" y2="130" class="shelf" />
       <line x1="40" y1="200" x2="180" y2="200" class="shelf inner" />
@@ -298,7 +319,7 @@ const live = computed(() => !!a.value && a.value.phase !== "idle");
     </g>
 
     <!-- the user's mental load -->
-    <g v-for="p in noise" :key="p.text" class="noise">
+    <g v-for="p in compact ? [] : noise" :key="p.text" class="noise">
       <rect :x="p.x" :y="p.y - 13" :width="pillW(p.text)" height="20" rx="10" />
       <text :x="p.x + 9" :y="p.y + 1">{{ p.text }}</text>
     </g>
@@ -426,7 +447,7 @@ const live = computed(() => !!a.value && a.value.phase !== "idle");
 
     <!-- links between the zones -->
     <g
-      v-for="l in links"
+      v-for="l in shownLinks"
       :key="l.d"
       class="link"
       :class="[l.kind, linkState(l)]"
@@ -438,8 +459,10 @@ const live = computed(() => !!a.value && a.value.phase !== "idle");
     </g>
 
     <!-- caption strip -->
-    <rect x="0" y="394" width="960" height="38" rx="10" class="caption-box" />
-    <text x="16" y="418" class="caption">{{ caption }}</text>
+    <g v-if="!compact">
+      <rect x="0" y="394" width="960" height="38" rx="10" class="caption-box" />
+      <text x="16" y="418" class="caption">{{ caption }}</text>
+    </g>
   </svg>
 </template>
 
