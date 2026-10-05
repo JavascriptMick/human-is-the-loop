@@ -63,40 +63,56 @@ None of these agents were "evil". They did what they were built to do: take a go
 -->
 
 ---
-clicks: 2
+clicks: 4
 ---
 
 # "Human in the loop" is not enough
 
-<div class="grid grid-cols-2 gap-6 mt-8">
+<div class="grid grid-cols-[1fr_1.15fr] gap-8 mt-8 items-start">
   <div class="card">
-    <div class="kicker danger">Human in the loop</div>
-    <div class="mt-1 dim text-sm">The agent owns the loop. The user is a checkpoint.</div>
-    <ul class="mt-4 leading-relaxed">
-      <li>The agent does the thinking</li>
-      <li>The agent decides what tools to call</li>
-      <li>The user involved at the start and end, the agent owns the middle</li>
-    </ul>
+    <div class="kicker">Definition</div>
+    <blockquote class="hitl-quote font-serif mt-3">
+      In the context of AI, HITL means that humans are involved <strong>at some point</strong> in the AI workflow to ensure accuracy, safety, accountability or ethical decision-making.
+    </blockquote>
+    <div class="mt-3 text-xs dim">IBM, <a href="https://www.ibm.com/think/topics/human-in-the-loop" target="_blank">ibm.com/think/topics/human-in-the-loop</a></div>
   </div>
-  <div v-click="1" class="card">
-    <div class="kicker">Human <span class="accent">IS</span> the loop</div>
-    <div class="mt-1 dim text-sm">The user is solving problems with a cognitive loop. The agent runs short loops to support.</div>
-    <ul class="mt-4 leading-relaxed">
-      <li>The agent tracks the users focus</li>
-      <li>It's an expert in the apps state and views</li>
-      <li>It shares the cognitive load, then gets out of the way</li>
-    </ul>
+  <div class="flex flex-col gap-4">
+    <div v-click="1" class="reaction">"I thought I was getting a smart collaborative assistant, not a difficult to control intern who doesn't sleep"</div>
+    <div v-click="2" class="reaction">"What's it doing when i'm not watching? Do I need to guardrail everything?"</div>
+    <div v-click="3" class="reaction">"The agent does the interesting part, the thinking, the deciding, the learning, and I just check its work? That's the tedious part"</div>
   </div>
 </div>
 
-<div v-click="2" class="mt-10 text-2xl text-center">
-  The agent tracks and supports the concerns and decisions of the <strong class="accent">user</strong> first.
+<div v-click="4" class="mt-8 text-2xl text-center">
+  HITL doesn't feel very good to normal humans.
 </div>
+
+<style>
+.hitl-quote {
+  border: none;
+  padding: 0;
+  background: none;
+  border-radius: 0;
+  font-size: 1.15rem;
+  line-height: 1.5;
+  color: var(--ink);
+}
+.reaction {
+  border-left: 3px solid var(--warm);
+  background: var(--bg-2);
+  border-radius: 0 10px 10px 0;
+  padding: 0.6rem 0.9rem;
+  font-style: italic;
+  color: var(--ink);
+}
+</style>
 
 <!--
-[1:00] The usual answer is "put a human in the loop". But that keeps the agent in charge: it thinks, it decides, and every so often the user gets asked to approve something. That's a worse experience, not a better one.
-[click] Flip it. The user is already running a loop, their day. The agent should run inside that, helping with one step at a time.
-[click] That's what the title means. The human isn't a checkpoint on the agent's loop. The human IS the loop.
+[1:00] The usual answer is "put a human in the loop". Here's IBM's definition: humans are involved at some point in the workflow, to ensure accuracy, safety and accountability. The human is a point of escalation. An auditor.
+[click] Put yourself in that seat. The agent is doing all the interesting stuff, making the decisions, doing the learning. I'm just meant to check and correct? That feels like work.
+[click] I want the agent to work with me. If I'm only involved at points, I'm working for the agent.
+[click] And what happens between my points? If the agent goes rogue and starts hacking websites to get what it needs, like the stories we just saw. I would never do that. It's not how I work.
+[click] In a professional setting that can be fine. Efficiency is the goal, and the human is the accountable backstop. But in a consumer app it doesn't feel responsive or personal. Nobody wants to audit their dinner.
 -->
 
 ---
@@ -110,9 +126,9 @@ clicks: 2
     <div class="mt-2 dim">recipes4me: hands-free cooking, shopping and meal planning by voice</div>
   </div>
   <div class="card">
-    <div class="kicker">Part 1 · The Pattern</div>
-    <div class="text-xl font-700 mt-2">Two loops, four rules</div>
-    <div class="mt-2 dim">How the agent's loop fits inside the user's, and what keeps it there</div>
+    <div class="kicker">Part 1 · Principles</div>
+    <div class="text-xl font-700 mt-2">Two loops, four principles</div>
+    <div class="mt-2 dim">How we can build agents that support users and reduce cognitive load</div>
   </div>
   <div class="card">
     <div class="kicker">Part 2 · Implementation</div>
@@ -122,11 +138,11 @@ clicks: 2
 </div>
 
 <div class="mt-10 text-center text-lg">
-  You'll leave with a flexible pattern that runs in-app on <strong class="accent">low cost</strong> inference.
+  You'll leave with a flexible pattern that works for <strong class="accent">real</strong> users.
 </div>
 
 <!--
-[0:30] Here's the plan. First I'll show you the thing working. Then the idea: two loops and four rules. Then the code. And the payoff: this runs on a small, cheap model, because the model only ever sees a handful of tools.
+[0:30] Here's the plan. First I'll show you the thing working. Then the idea: two loops and four principles. Then the code. And the payoff: this runs on a small, cheap model, because the model only ever sees a handful of tools.
 -->
 
 ---
@@ -157,9 +173,9 @@ layout: center
 ---
 
 <SectionCard
-  kicker="Part 1 - The Pattern"
-  title="Two loops, four rules"
-  subtitle="Why the agent belongs inside the user's loop"
+  kicker="Part 1 - Establishing principles for Agentic UX"
+  title="Two loops, four principles"
+  subtitle="How we can build agents that support users and reduce cognitive load"
 />
 
 <!--
@@ -170,11 +186,10 @@ layout: center
 clicks: 14
 ---
 
-<div class="kicker">The agent's loop</div>
+<div class="kicker">A prompt hack developed in 2022</div>
 
-# Every agent is this loop
+# The Agentic Loop
 
-How we use a prompt hack to turn a token generator into an autonomous agent
 
 <ReActAgent :stage="$clicks" class="-mt-2" />
 
@@ -197,54 +212,62 @@ How we use a prompt hack to turn a token generator into an autonomous agent
 -->
 
 ---
-clicks: 12
+clicks: 19
 ---
 
-<div class="kicker">Meet our hero</div>
+<div class="kicker">A survival mechanism developed over the last 600 million years</div>
 
-# The user is running a loop too
+# The Cognitive Loop
 
 <UserAgentLoops :stage="$clicks" class="-mt-2" />
 
 <!--
 [1:45] Now meet the person it's for. Recipes4Me is B2C, and our key users are busy people running a home, very often mums. They multitask hard. Look at everything else on their mind.
-[click] They're running a loop of their own. Trigger: I need to cook dinner.
-[click] Think: I feel like eggplant, do I have any?
+[click] They're running a loop of their own. Trigger: I need to eat more vegetables. Carrots are nice.
+[click] Reason: not sure I have carrots in the fridge, better check.
 [click] Act, in the real world: open the fridge.
-[click] Observe: plenty of eggplant.
-[click] Think: we made a great eggplant recipe a couple of weeks ago... what was it? Memory is fuzzy, and this is where the app can help.
-[click] Act: "Hey Recipes, what was that eggplant recipe we made last week?" That's the trigger for the agent's loop.
-[click] The agent thinks. It's a recipe expert, and it knows there's a tool to search meal plans. Meanwhile the user has moved on.
-[click] It acts: searchMealPlansForRecipe with "eggplant".
-[click] It observes: no meal plan for last week.
-[click] It thinks: maybe the user has the dates mixed up.
-[click] And it finishes with a helpful answer, which lands in the user's loop as an observation.
-[click] Oh right, 3 weeks ago. The user runs the big loop. The agent runs short loops inside it, sharing the cognitive load, as an expert in the app's domain.
+[click] Observe: no carrots. Eggplant and milk, but no carrots.
+[click] Reason: better buy some. This is where the app can help.
+[click] Act: "Hey Recipes, add carrots to the list." That's the trigger for the agent's loop.
+[click] The agent reasons. The user wants carrots on the list, and there's a tool that adds an item by name. Meanwhile the user has moved on.
+[click] It acts: addShoppingListItem("carrots").
+[click] It observes: two matching products in the user's favourites.
+[click] It reasons: there's no way of knowing which one, so it doesn't guess. Better ask.
+[click] It finishes with a question, which lands in the user's loop as an observation. Oh, two kinds of carrots.
+[click] The user reasons with something only they know. I prefer the baby carrots, they're tender.
+[click] Act: "The baby carrots." That starts a second, short agent loop. The agent observes the choice.
+[click] It reasons: now there's a specific product, and a tool to add a product by id.
+[click] It acts: addProductToCartById.
+[click] It observes: success.
+[click] It reasons: tool call is good, looks like we are done. The model decides the task is complete before it returns.
+[click] And it finishes: carrots have been added to the list. Back into the user's loop.
+[click] And the user is already onto the next thing: now I need some carrot recipes. The user runs the big loop. The agent runs short loops inside it, sharing the cognitive load, as an expert in the app's domain.
 -->
 
 ---
 clicks: 4
 ---
+<div class="kicker">Bearing cognitive load, not producing it</div>
 
-# Four rules keep the agent inside the user's loop
+# Four principles for engaging Agentic UX
 
 <div class="mt-6">
-  <BoundaryCards :stage="$clicks" />
+  <BoundaryCardsPrinciples :stage="$clicks" />
 </div>
 
 <!--
-[1:30] So what keeps the recipes4me loop from going the way of those headlines, and makes it useful at the same time? Four rules. Everything in part 2 is labelled with one of these.
-[click] Bounded by the app: the tools are the app's own functions, over the app's data, driving the same screens. If the user can't do it in the app, the agent can't either.
-[click] Workflows in code: known processes like cooking a recipe are written in code. The LLM doesn't decide the next step.
-[click] Arm and gate: the LLM only sees a couple of tools at a time, and anything else is rejected.
-[click] Follow attention: the loop follows what the user is focused on and keeps the other things they had going. Let's look at that one.
+[1:30] So what keeps the recipes4me loop from going the way of those headlines, and makes it useful at the same time? Four principles. Everything in part 2 is labelled with one of these.
+[click] Understand the user's intent: work out what problem the user is trying to solve, and only arm the tools for that. Don't make assumptions about what they're thinking.
+[click] Respond to changes but take notes: when the user's intent changes, follow it, but keep the state of what they had going so they don't start from scratch when they come back.
+[click] Be an expert: know the domain and the processes inside it. Known processes like cooking a recipe are written in code, so the LLM doesn't decide the next step. A generalist adds no value.
+[click] No magic: the tools are the app's own functions, over the app's data, driving the same screens. If the user can't do it in the app, the agent can't either. Let's look at responding to changes first.
 -->
 
 ---
 clicks: 2
 ---
 
-<div class="kicker">Rule 4 · Follow attention</div>
+<div class="kicker">Principle 2 · Respond to changes but take notes</div>
 
 # What does the user need <span class="accent">now</span>?
 
@@ -295,7 +318,7 @@ class: '!py-6'
 [click] 15 minutes later, the app itself interrupts. No user input, but it's still code in the app deciding to speak.
 [click] I get distracted and ask to add satay sauce to the shopping list. Shopping takes my attention, and cooking is backgrounded with its state kept.
 [click] "back to cooking", switchToFlow, and we pick up at step 1.
-[click] The whole thing in one line. All four rules are in there. Now let's see how it's built.
+[click] The whole thing in one line. All four principles are in there. Now let's see how it's built.
 -->
 
 ---
@@ -309,7 +332,7 @@ layout: center
 />
 
 <!--
-[0:15] Now the code. All of this is real Dart from the framework and the recipes app, cut down to fit. Each slide is tagged with the rule it implements.
+[0:15] Now the code. All of this is real Dart from the framework and the recipes app, cut down to fit. Each slide is tagged with the principle it implements.
 -->
 
 ---
@@ -333,129 +356,7 @@ clicks: 5
 
 ---
 
-<div class="kicker">Rule 1 · Bounded by the app</div>
-
-# A tool is just an annotated app method
-
-````md magic-move {lines: true}
-```dart
-// cooking_assistant.dart - you write this
-@IntentTool(
-  description:
-      'Start cooking a new recipe. Requires a recipe_id. Do not call this '
-      'if a cooking workflow is already in progress.',
-  isGlobal: true,
-)
-FutureOr<IntentResult> startCooking(
-  @Param('The Recipe Id to cook') int recipe_id,
-) {
-  ...
-}
-```
-
-```dart
-// cooking_assistant.intent.g.dart - build_runner writes this
-agent.registerTool(
-  IntentToolRegistration(
-    toolName: 'startCooking',
-    description:
-        '''Start cooking a new recipe. Requires a recipe_id. Do not call this if a cooking workflow is already in progress.''',
-    parametersSchema: {
-      'type': 'object',
-      'properties': <String, dynamic>{
-        'recipe_id': <String, dynamic>{
-          'type': 'integer',
-          'description': '''The Recipe Id to cook''',
-        },
-      },
-      'required': ['recipe_id'],
-    },
-    handler: (args) => startCooking((args['recipe_id'] as num).toInt()),
-    isGlobal: true,
-  ),
-);
-```
-````
-
-<!--
-[1:30] A tool is just a method on your class. The description is the prompt. isGlobal: true means it's always offered, like a main menu item. isGlobal: false means it's only offered when a flow arms it.
-[click] build_runner turns Dart types into JSON Schema and generates the registration. No hand-written schemas, and the analyzer checks everything.
--->
-
----
-
-<div class="kicker">Rule 1 · Bounded by the app</div>
-
-# A flow can only touch what you hand it
-
-```dart {all|22-25}
-_provider = openAI(
-  baseUrl: Environment.agentBaseUrl,          // proxy → Gemini
-  tokenProvider: _accessToken,                // user session, refreshed per request
-  headersProvider: () async => {'X-Account-Id': '${activeAccountId.value}'},
-);
-
-await FlutterAgentFramework.initialize(
-  AgentConfig.voice(
-    provider: _provider!,
-    toolScoping: ToolScopingStrategy.narrowToolList,
-    systemPrompt: '''
-You are a helpful cooking, shopping and meal planning assistant inside the recipes4me app.
-The user speaks and their words are transcribed automatically, so the text you receive
-may contain transcription errors...
-When the user asks you to perform an action, call the appropriate function.
-You can manage several different workflows simultaneously...
-''',
-    wakeKeywordId: 'hey_recipes',
-  ),
-);
-
-ShoppingListAssistant.instance.initialize(cartStore: cartStore, searchStore: searchStore, ...);
-CookingAssistant.instance.initialize(apiClient: apiClient, activeAccountId: activeAccountId);
-MealPlanAssistant.instance.initialize(mealPlanStore: mealPlanStore, myRecipesStore: myRecipesStore);
-WhatsForDinnerAssistant.instance.initialize(...);
-```
-
-<!--
-[0:30] Bootstrapping, lib/voice_agent/voice_agent.dart. A Gemini proxy with no API key in the bundle, a short system prompt, a wake word.
-[click] The bit that matters: each assistant gets the app stores it needs. That's the boundary. Whatever you hand a flow is all it can touch.
--->
-
----
-
-<div class="kicker">Rule 2 · Workflows in code</div>
-
-# A flow owns one user intent
-
-```dart {all|2|3-4|5|7-12}
-abstract class IntentFlow {
-  String get flowName;                    // 'cooking', 'shopping'
-  String get switchToFlowContextSummary;  // one-liner when it's in the background
-  String get currentFlowContextSummary;   // one-liner when it's current
-  bool get flowIsActive;                  // dirty context? ("in progress: step 3")
-
-  /// Flip back to this flow using its saved context, no mutation
-  FutureOr<IntentResult> resumeThisFlow();
-  /// Attention is moving away: drop transient state (pending confirmations)
-  FutureOr<void> backgroundThisFlow();
-  /// The user abandoned it: drop ALL context so flowIsActive goes false
-  FutureOr<void> cancelThisFlow();
-}
-```
-
-<div v-click="5" class="mt-4 dim">
-A flow is a <strong>re-entrant orchestrator</strong> for one user intent. It's related to sagas, actors, dialogue policies and FSMs.
-</div>
-
-<!--
-[1:00] Every flow implements this.
-[click] Name. [click] Two summaries: these are how the LLM knows about flows it isn't currently in. [click] flowIsActive: conventionally `_context != null`.
-[click] Resume, background, cancel: the lifecycle of the user's attention.
--->
-
----
-
-<div class="kicker">Rule 3 · Arm and gate</div>
+<div class="kicker">Principle 1 · Understand the user's intent</div>
 
 # The flow, not the LLM, decides what comes next
 
@@ -500,55 +401,7 @@ FutureOr<IntentResult> startCooking(@Param('The Recipe Id to cook') int recipe_i
 class: dense
 ---
 
-<div class="kicker">Rule 2 · Workflows in code</div>
-
-# The orchestrator drives the steps and the screen
-
-```dart {all|2-4|6-13|14-23|24-27}
-IntentResult _orchestrate(CookingAssistantContext ctx, List<String> messages) {
-  // agent 'shows' the user the cooking assistant screen while orchestrating
-  final path = appRouter.routerDelegate.currentConfiguration.uri.path;
-  if (path != '/recipes/assistant') appRouter.go('/recipes/assistant');
-
-  if (ctx.is_in_pre_cook) {
-    orchestratedStepIndex.value = -1;          // signal → screen scrolls to ingredients
-    return IntentResult.withNextTools(
-      [...messages, "Let's cook ${ctx.recipe_name}.",
-       'Would you like me to read out the ingredients, or are you ready to cook?'],
-      ['readIngredients', 'readyToCook'],
-    );
-  }
-
-  orchestratedStepIndex.value = ctx.current_step_index;   // highlight the step
-  final stepAtSet = ctx.current_step;
-  if (!identical(_timerStep, stepAtSet)) {
-    _stepTimer?.cancel();                      // previous step's timer is obsolete
-    _timerStep = null;
-    if (stepAtSet.timerDuration != null) {
-      _stepTimer = Timer(stepAtSet.timerDuration!, () => _onStepTimerFired(ctx, stepAtSet));
-      _timerStep = stepAtSet;
-    }
-  }
-  return IntentResult.withNextTools(
-    [...messages, ctx.current_step_index == 0 ? 'First step' : 'next step', ctx.current_step.prompt],
-    ['stepComplete'],
-  );
-}
-```
-
-<!--
-[1:30] The heart of a flow. Every tool handler changes the context and then calls this. It's re-entrant: it looks at the context and works out where we are.
-[click] It navigates, with the same router the UI uses.
-[click] Pre-cook: update a signal so the screen scrolls, ask one question, arm two tools.
-[click] Cooking: highlight the step and set a timer if the step has one.
-[click] Then say the step and arm stepComplete. The LLM never decides what step comes next.
--->
-
----
-class: dense
----
-
-<div class="kicker">Rule 3 · Arm and gate</div>
+<div class="kicker">Principle 1 · Understand the user's intent</div>
 
 # The LLM can only call what's armed
 
@@ -589,7 +442,7 @@ Future<IntentResult?> _executeIntentTool(
 
 <!--
 [1:30] AgentService, one turn, in five steps.
-[click] The availability gate. Even if the model hallucinates a tool name, or a stale turn arrives late, it can't run anything that isn't armed. This is where "bounded" is enforced in code.
+[click] The availability gate. Even if the model hallucinates a tool name, or a stale turn arrives late, it can't run anything that isn't armed. This is where the armed set is enforced in code.
 [click] Then apply the result: attention goes to whichever flow owns the tool, and that flow's requested tools get armed.
 -->
 
@@ -597,7 +450,7 @@ Future<IntentResult?> _executeIntentTool(
 class: dense
 ---
 
-<div class="kicker">Rule 4 · Follow attention</div>
+<div class="kicker">Principle 2 · Respond to changes but take notes</div>
 
 # Attention moves in exactly one place
 
@@ -652,7 +505,87 @@ Future<void> _transferAttention(String? newFlowName) async {
 
 ---
 
-<div class="kicker">Rule 2 · Workflows in code</div>
+<div class="kicker">Principle 3 · Be an Expert</div>
+
+# A flow owns one user intent
+
+```dart {all|2|3-4|5|7-12}
+abstract class IntentFlow {
+  String get flowName;                    // 'cooking', 'shopping'
+  String get switchToFlowContextSummary;  // one-liner when it's in the background
+  String get currentFlowContextSummary;   // one-liner when it's current
+  bool get flowIsActive;                  // dirty context? ("in progress: step 3")
+
+  /// Flip back to this flow using its saved context, no mutation
+  FutureOr<IntentResult> resumeThisFlow();
+  /// Attention is moving away: drop transient state (pending confirmations)
+  FutureOr<void> backgroundThisFlow();
+  /// The user abandoned it: drop ALL context so flowIsActive goes false
+  FutureOr<void> cancelThisFlow();
+}
+```
+
+<div v-click="5" class="mt-4 dim">
+A flow is a <strong>re-entrant orchestrator</strong> for one user intent. It's related to sagas, actors, dialogue policies and FSMs.
+</div>
+
+<!--
+[1:00] Every flow implements this.
+[click] Name. [click] Two summaries: these are how the LLM knows about flows it isn't currently in. [click] flowIsActive: conventionally `_context != null`.
+[click] Resume, background, cancel: the lifecycle of the user's attention.
+-->
+
+---
+class: dense
+---
+
+<div class="kicker">Principle 3 · Be an Expert</div>
+
+# The orchestrator drives the steps and the screen
+
+```dart {all|2-4|6-13|14-23|24-27}
+IntentResult _orchestrate(CookingAssistantContext ctx, List<String> messages) {
+  // agent 'shows' the user the cooking assistant screen while orchestrating
+  final path = appRouter.routerDelegate.currentConfiguration.uri.path;
+  if (path != '/recipes/assistant') appRouter.go('/recipes/assistant');
+
+  if (ctx.is_in_pre_cook) {
+    orchestratedStepIndex.value = -1;          // signal → screen scrolls to ingredients
+    return IntentResult.withNextTools(
+      [...messages, "Let's cook ${ctx.recipe_name}.",
+       'Would you like me to read out the ingredients, or are you ready to cook?'],
+      ['readIngredients', 'readyToCook'],
+    );
+  }
+
+  orchestratedStepIndex.value = ctx.current_step_index;   // highlight the step
+  final stepAtSet = ctx.current_step;
+  if (!identical(_timerStep, stepAtSet)) {
+    _stepTimer?.cancel();                      // previous step's timer is obsolete
+    _timerStep = null;
+    if (stepAtSet.timerDuration != null) {
+      _stepTimer = Timer(stepAtSet.timerDuration!, () => _onStepTimerFired(ctx, stepAtSet));
+      _timerStep = stepAtSet;
+    }
+  }
+  return IntentResult.withNextTools(
+    [...messages, ctx.current_step_index == 0 ? 'First step' : 'next step', ctx.current_step.prompt],
+    ['stepComplete'],
+  );
+}
+```
+
+<!--
+[1:30] The heart of a flow. Every tool handler changes the context and then calls this. It's re-entrant: it looks at the context and works out where we are.
+[click] It navigates, with the same router the UI uses.
+[click] Pre-cook: update a signal so the screen scrolls, ask one question, arm two tools.
+[click] Cooking: highlight the step and set a timer if the step has one.
+[click] Then say the step and arm stepComplete. The LLM never decides what step comes next.
+-->
+
+---
+
+<div class="kicker">Principle 3 · Be an Expert</div>
 
 # Interrupts: the app speaks first
 
@@ -689,6 +622,96 @@ Proactive, but <strong>not autonomous</strong>: the flow decides when to speak, 
 -->
 
 ---
+
+<div class="kicker">Principle 4 · No Magic</div>
+
+# A tool is just an annotated app method
+
+````md magic-move {lines: true}
+```dart
+// cooking_assistant.dart - you write this
+@IntentTool(
+  description:
+      'Start cooking a new recipe. Requires a recipe_id. Do not call this '
+      'if a cooking workflow is already in progress.',
+  isGlobal: true,
+)
+FutureOr<IntentResult> startCooking(
+  @Param('The Recipe Id to cook') int recipe_id,
+) {
+  ...
+}
+```
+
+```dart
+// cooking_assistant.intent.g.dart - build_runner writes this
+agent.registerTool(
+  IntentToolRegistration(
+    toolName: 'startCooking',
+    description:
+        '''Start cooking a new recipe. Requires a recipe_id. Do not call this if a cooking workflow is already in progress.''',
+    parametersSchema: {
+      'type': 'object',
+      'properties': <String, dynamic>{
+        'recipe_id': <String, dynamic>{
+          'type': 'integer',
+          'description': '''The Recipe Id to cook''',
+        },
+      },
+      'required': ['recipe_id'],
+    },
+    handler: (args) => startCooking((args['recipe_id'] as num).toInt()),
+    isGlobal: true,
+  ),
+);
+```
+````
+
+<!--
+[1:30] A tool is just a method on your class. The description is the prompt. isGlobal: true means it's always offered, like a main menu item. isGlobal: false means it's only offered when a flow arms it.
+[click] build_runner turns Dart types into JSON Schema and generates the registration. No hand-written schemas, and the analyzer checks everything.
+-->
+
+---
+
+<div class="kicker">Principle 4 · No Magic</div>
+
+# A flow can only touch what you hand it
+
+```dart {all|22-25}
+_provider = openAI(
+  baseUrl: Environment.agentBaseUrl,          // proxy → Gemini
+  tokenProvider: _accessToken,                // user session, refreshed per request
+  headersProvider: () async => {'X-Account-Id': '${activeAccountId.value}'},
+);
+
+await FlutterAgentFramework.initialize(
+  AgentConfig.voice(
+    provider: _provider!,
+    toolScoping: ToolScopingStrategy.narrowToolList,
+    systemPrompt: '''
+You are a helpful cooking, shopping and meal planning assistant inside the recipes4me app.
+The user speaks and their words are transcribed automatically, so the text you receive
+may contain transcription errors...
+When the user asks you to perform an action, call the appropriate function.
+You can manage several different workflows simultaneously...
+''',
+    wakeKeywordId: 'hey_recipes',
+  ),
+);
+
+ShoppingListAssistant.instance.initialize(cartStore: cartStore, searchStore: searchStore, ...);
+CookingAssistant.instance.initialize(apiClient: apiClient, activeAccountId: activeAccountId);
+MealPlanAssistant.instance.initialize(mealPlanStore: mealPlanStore, myRecipesStore: myRecipesStore);
+WhatsForDinnerAssistant.instance.initialize(...);
+```
+
+<!--
+[0:30] Bootstrapping, lib/voice_agent/voice_agent.dart. A Gemini proxy with no API key in the bundle, a short system prompt, a wake word.
+[click] The bit that matters: each assistant gets the app stores it needs. That's the boundary. Whatever you hand a flow is all it can touch.
+-->
+
+---
 clicks: 6
 ---
 
@@ -712,7 +735,7 @@ clicks: 6
 
 ---
 
-<div class="kicker">Rule 1 · Bounded by the app</div>
+<div class="kicker">Principle 4 · No Magic</div>
 
 # The same agent, three ways in
 
