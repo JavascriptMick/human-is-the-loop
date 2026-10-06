@@ -217,9 +217,6 @@ const slots: Slot[] = [
   { tag: "RE", label: "Reasoning", kind: "think", stage: 4 },
   { tag: "ACT", label: "Tool call", kind: "act", stage: 4 },
   { tag: "OBS", label: "Tool result", kind: "obs", stage: 9 },
-  { tag: "RE", label: "Reasoning", kind: "think", stage: 13 },
-  { tag: "ACT", label: "Tool call", kind: "act", stage: 13 },
-  { tag: "OBS", label: "Tool result", kind: "obs", stage: 13 },
   { tag: "F", label: "Answer", kind: "final", stage: 10 },
 ];
 
@@ -428,15 +425,15 @@ function edgeState(e: Edge) {
 
     <g class="rao" :class="{ on: props.stage >= 13 }">
       <path
-        :d="`M872,${slotY(3) + 14} C904,${slotY(3) + 20} 904,${slotY(8) + 8} 872,${slotY(8) + 14}`"
+        :d="`M872,${slotY(3) + 14} C904,${slotY(3) + 20} 904,${slotY(5) + 8} 872,${slotY(5) + 14}`"
         marker-start="url(#ra-think)"
         marker-end="url(#ra-think)"
       />
-      <text x="926" :y="slotY(5) - 2">REason ·</text>
-      <text x="926" :y="slotY(5) + 12">ACT ·</text>
-      <text x="926" :y="slotY(5) + 26">observe</text>
-      <text x="926" :y="slotY(5) + 40">S.Yao</text>
-      <text x="926" :y="slotY(5) + 54">2022</text>
+      <text x="926" :y="slotY(3) + 4">REason ·</text>
+      <text x="926" :y="slotY(3) + 18">ACT ·</text>
+      <text x="926" :y="slotY(3) + 32">observe</text>
+      <text x="926" :y="slotY(3) + 46">S.Yao</text>
+      <text x="926" :y="slotY(3) + 60">2022</text>
     </g>
 
     <text :x="SLOT_X" y="378" class="footnote">

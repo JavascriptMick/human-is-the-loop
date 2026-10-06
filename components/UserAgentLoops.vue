@@ -88,7 +88,10 @@ const user: Say[] = [
   { phase: "reason", lines: ['"Now I need some carrot recipes..."'] },
   {
     phase: "act",
-    lines: ['"Hey Recipes, find me some good', 'carrot recipes for next week."'],
+    lines: [
+      '"Hey Recipes, find me some good',
+      'carrot recipes for next week."',
+    ],
   },
   waiting,
   waiting,
@@ -179,8 +182,8 @@ const agent: (Say | null)[] = [
 ];
 
 const captions = [
-  "Meet our hero: the user. Busy, multitasking, with a lot on their mind.",
-  "Trigger: something starts the user's own loop.",
+  "The Human brain runs it's own cognitive loop",
+  "Trigger: Health and hunger",
   "Reason: the internal monologue.",
   "Act: in the real world.",
   "Observe: no carrots. Update the plan.",
@@ -377,7 +380,9 @@ const currentFlowName = computed(
   () => [...flowChanges].reverse().find((f) => f.n <= s.value)?.flow ?? "",
 );
 // mono glyphs are ~0.6em wide: label at 9.5px, value at 10.5px
-const flowChipW = computed(() => 16 * 5.7 + currentFlowName.value.length * 6.3 + 22);
+const flowChipW = computed(
+  () => 16 * 5.7 + currentFlowName.value.length * 6.3 + 22,
+);
 </script>
 
 <template>
@@ -575,15 +580,9 @@ const flowChipW = computed(() => 16 * 5.7 + currentFlowName.value.length * 6.3 +
       :key="currentFlowName"
       class="current-flow appear"
     >
-      <rect
-        x="686"
-        y="60"
-        :width="flowChipW"
-        height="20"
-        rx="10"
-      />
+      <rect x="686" y="60" :width="flowChipW" height="20" rx="10" />
       <text x="697" y="74">
-        <tspan class="cf-label">currentFlowName </tspan>
+        <tspan class="cf-label">currentFlowName:</tspan>
         <tspan class="cf-value">{{ currentFlowName }}</tspan>
       </text>
     </g>
