@@ -186,6 +186,10 @@ clicks: 4
   <BoundaryCardsPrinciples :stage="$clicks" />
 </div>
 
+<div class="mt-6 text-center text-xs dim">
+  For a deeper dive into HCI research on multitasking, interruption and mixed-initiative interaction. See the <Link to="18">appendix</Link>.
+</div>
+
 <!--
 [1:30] So how do we keep the user in the loop the whole way through, and make the agent useful at the same time? Four principles. Every code slide later is labelled with one of these.
 [click] Understand the user's intent: work out what problem the user is trying to solve, and only arm the tools for that. Don't make assumptions about what they're thinking.
@@ -199,16 +203,13 @@ layout: center
 ---
 
 <div class="grid grid-cols-[auto_1fr] gap-12 items-center">
-  <PhoneFrame src="https://pub-26aad13248394af7b8b24b494f0ed211.r2.dev/landing/Acedant_launch_demo_final.mp4" video sound :width="200" caption="demo video" />
+  <PhoneFrame src="/HumanIsTheLoopDemoVideo.mp4" video sound :width="200" caption="demo video" />
   <div>
     <div class="kicker">Quick Demo</div>
     <h1>Cooking with recipes4me</h1>
     <ul class="mt-6 dim">
-      <li> "Can we add tomatoes to the list" - Global actions and routing"</li>
-      <li> "Lets do the weekly Meal Plan" - Wake word & Orchestrated flows</li>
-      <li> "Cook this recipe?" - Contextual flow suggestions</li>
-      <li> "Thats done, next step" - Interruptions</li>
-      <li> "Lets add milk to the shopping list" - Flow Switching and return</li>
+      <li> "Can we add tomatoes to the list" - Intent Tools and routing"</li>
+      <li> "Lets do the weekly Meal Plan" - Wake word & Intent Flows</li>
     </ul>
   </div>
 </div>
@@ -439,12 +440,6 @@ IntentResult stepComplete() {
 }
 ```
 
-<div class="flex gap-3 mt-4">
-  <span class="chip">IntentResult.done(msgs)</span>
-  <span class="chip">.withNextTools(msgs, tools)</span>
-  <span class="chip">.withLLMContext(user, llm, tools)</span>
-</div>
-
 <!--
 [1:00] Two kinds of tool on the same class.
 [click] startCooking is global, so the agent can always call it: "let's cook the satay stir-fry". It loads the recipe and starts a fresh context.
@@ -523,9 +518,9 @@ clicks: 5
 clicks: 30
 ---
 
-<div class="kicker">Bringing it all together</div>
+<div class="kicker">Supporting The Users Own Cognitive Loop</div>
 
-# Supporting The Users Own Cognitive Loop
+# Human <span class="accent">IS</span> The Loop
 
 <UserAgentLoops :stage="$clicks"  class="-mt-2" />
 
@@ -539,9 +534,9 @@ clicks: 30
 [click] Act: "Hey Recipes, add carrots to the list." That's the trigger for the agent's loop.
 [click] The agent reasons. The user wants carrots on the list, and there's a global tool that adds an item by name. That's the annotated tool we saw. Meanwhile the user has moved on.
 [click] It acts: addShoppingListItem("carrots").
-[click] It observes: two matching products in the user's favourites.
+[click] It observes: two matching products in the user's favourites, Carrots 1kg and Baby Carrots 500g.
 [click] It reasons: there's no way of knowing which one, so it doesn't guess. Better ask. Strictly, the code decided that, not the LLM. The expert knows two products means a question.
-[click] It finishes with a question. It can't go on without the user.
+[click] It finishes with a question that names both options. It can't go on without the user.
 [click] The question lands in the user's loop as an observation. Oh, two kinds of carrots.
 [click] The user reasons with something only they know. I prefer the baby carrots, they're tender.
 [click] Act: "The baby carrots." That starts a second, short agent loop. The agent observes the choice.
@@ -644,4 +639,135 @@ Appendix, for Q&A. Results from trying to run the agent fully on device.
 Gemma 4 E2B got to 100% accuracy with a fresh session per turn, but at 10-11 s per turn. Sharing a session made it faster but less accurate.
 The only run under 2 s per turn was Qwen3.5-0.8B over adb, and inside the app that dropped to 76% at 18.4 s.
 Tiny function-calling models were fast but too dumb, and LoRA tuning didn't fix it.
+-->
+
+---
+class: dense
+---
+
+<div class="kicker">Appendix</div>
+
+# Further reading: multitasking and dialogue
+
+<div class="grid grid-cols-2 gap-8 mt-3">
+  <div>
+    <div class="ref-group">
+      <div class="kicker">Working spheres and task switching</div>
+      <div class="ref"><strong>González & Mark (2004)</strong> <a href="https://doi.org/10.1145/985692.985707" target="_blank">"Constant, constant, multi-tasking craziness": Managing multiple working spheres</a>. CHI 2004.<br/><span class="why">People keep several persistent working spheres. Switching away doesn't end a task, so an assistant should keep its state and reduce the user's metawork.</span></div>
+      <div class="ref"><strong>Iqbal & Horvitz (2007)</strong> <a href="https://www.microsoft.com/en-us/research/publication/disruption-recovery-computing-tasks-field-study-analysis-directions/" target="_blank">Disruption and recovery of computing tasks: Field study, analysis, and directions</a>. CHI 2007.<br/><span class="why">Interruptions carry a resumption cost. Preserving context matters more than allowing switching, and task boundaries are better moments to intervene.</span></div>
+      <div class="ref"><strong>Altmann & Trafton (2002)</strong> <a href="https://doi.org/10.1207/s15516709cog2601_2" target="_blank">Memory for goals: An activation-based model</a>. Cognitive Science 26(1).<br/><span class="why">Interrupted goals decay. Retrieval cues bring them back, so an assistant should surface the right cue at the right time.</span></div>
+      <div class="ref"><strong>Trafton, Altmann, Brock & Mintz (2003)</strong> <a href="https://doi.org/10.1016/S1071-5819(03)00023-5" target="_blank">Preparing to resume an interrupted task</a>. IJHCS 58(5).<br/><span class="why">Resumption improves when the next step is encoded first. A side interaction should end with a return cue: "Back to the curry: add the tomatoes now."</span></div>
+    </div>
+  </div>
+  <div>
+    <div class="ref-group">
+      <div class="kicker">Multi-threaded dialogue</div>
+      <div class="ref"><strong>Heeman, Yang, Kun & Shyrokov (2005)</strong> <a href="https://doi.org/10.1145/1040830.1040903" target="_blank">Conventions in human-human multi-threaded dialogues: A preliminary study</a>. IUI 2005.<br/><span class="why">People juggle conversational threads with conventions for interrupting and returning. Assistants should recognise thread shifts without forcing explicit mode changes.</span></div>
+      <div class="ref"><strong>Yang & Heeman (2009)</strong> <a href="https://doi.org/10.1145/1502650.1502703" target="_blank">Context restoration in multi-tasking dialogue</a>. IUI 2009.<br/><span class="why">A short side task ("add apples" while cooking curry) can be temporary without becoming a durable switch. The system should know the return point.</span></div>
+      <div class="ref"><strong>Grosz & Sidner (1986)</strong> <a href="https://aclanthology.org/J86-3001/" target="_blank">Attention, intentions, and the structure of discourse</a>. Computational Linguistics 12(3).<br/><span class="why">A local discourse segment ("green or red apples?") has its own focus without changing the user's broader activity focus.</span></div>
+    </div>
+  </div>
+</div>
+
+<!--
+Appendix, for Q&A. The research behind the user's loop and the Intent Flow switching model.
+Working spheres: people don't work in neat linear sequences, they keep several activities alive and switch between them. That's why flows background instead of ending.
+Interruption research: resuming costs effort, and cues help. That's the switchToFlowContextSummary and "back to cooking".
+Dialogue research: a clarifying question is a sub-conversation, not a new task.
+-->
+
+---
+class: dense
+---
+
+<div class="kicker">Appendix</div>
+
+# Further reading: initiative and timing
+
+<div class="grid grid-cols-2 gap-8 mt-3">
+  <div>
+    <div class="ref-group">
+      <div class="kicker">Mixed-initiative and human-AI interaction</div>
+      <div class="ref"><strong>Horvitz (1999)</strong> <a href="https://www.microsoft.com/en-us/research/publication/principles-mixed-initiative-user-interfaces/" target="_blank">Principles of mixed-initiative user interfaces</a>. CHI 1999.<br/><span class="why">When to act, ask, defer or stay quiet. Under uncertainty about the user's goals, doing less correctly beats doing something specific and wrong.</span></div>
+      <div class="ref"><strong>Amershi et al. (2019)</strong> <a href="https://www.microsoft.com/en-us/research/publication/guidelines-for-human-ai-interaction/" target="_blank">Guidelines for human-AI interaction</a>. CHI 2019.<br/><span class="why">Make capabilities clear, time services to context, support easy correction and dismissal, remember recent interactions, and scope behaviour when uncertain.</span></div>
+    </div>
+    <div class="ref-group">
+      <div class="kicker">Activity-centred computing</div>
+      <div class="ref"><strong>Bardram, Jeuris & Houben (2015)</strong> <a href="https://doi.org/10.1609/aimag.v36i2.2585" target="_blank">Activity-Based Computing: Computational management of activities reflecting human intention</a>. AI Magazine 36(2).<br/><span class="why">Organise around the user's activities, not apps, screens or a chat transcript. Activities nest: Christmas lunch contains the roast, the pudding and the potatoes.</span></div>
+    </div>
+  </div>
+  <div>
+    <div class="ref-group">
+      <div class="kicker">Proactive AI and timing</div>
+      <div class="ref"><strong>Pu et al. (2025)</strong> <a href="https://doi.org/10.1145/3706598.3713384" target="_blank">Assistance or disruption? Exploring and evaluating the design and trade-offs of proactive AI programming support</a>. CHI 2025.<br/><span class="why">Proactive help isn't automatically helpful. Poor timing breaks flow, and users do better when the assistant's context and intent are legible.</span></div>
+      <div class="ref"><strong>Kuo, Sergeyuk, Chen & Izadi (2026)</strong> <a href="https://arxiv.org/abs/2601.10253" target="_blank">Developer interaction patterns with proactive AI: A five-day field study</a>. IUI 2026.<br/><span class="why">Interventions at workflow boundaries land better than mid-task ones. Be aware continuously, interrupt selectively.</span></div>
+      <div class="ref"><strong>Pu et al. (2025)</strong> <a href="https://arxiv.org/abs/2507.21378" target="_blank">ProMemAssist: Exploring timely proactive assistance through working memory modeling in multi-modal wearable devices</a>. UIST 2025.<br/><span class="why">Weigh the value of helping against the cognitive cost of interrupting. Knowing what to say isn't enough, it has to be a good time to say it.</span></div>
+    </div>
+  </div>
+</div>
+
+<!--
+Appendix, for Q&A. When should the agent speak first?
+Horvitz and the Microsoft guidelines: under uncertainty, ask or do less rather than guess. That's the two-carrots question.
+The proactive AI studies: interrupt at task boundaries, not mid-task. The cooking timer is the one place the app speaks first, and it fires at a step boundary.
+-->
+
+---
+class: dense
+---
+
+<div class="kicker">Appendix</div>
+
+# Design implications from the research
+
+<blockquote class="implication-quote font-serif mt-3">
+  A long-running AI assistant should not treat the conversation as the primary object. It should treat the user's ongoing activity world as the primary object, with conversation as one interaction channel into that world.
+</blockquote>
+
+<ol class="implications grid grid-cols-2 gap-x-8 gap-y-2 mt-5 text-sm">
+  <li>Multiple activities can remain active without all being attended.</li>
+  <li>The foreground should usually be single-focus, but the assistant's memory should be multi-threaded.</li>
+  <li>Completing a task should normally release the foreground, not automatically promote another task.</li>
+  <li>Side commands can be handled inline without switching durable workflow focus.</li>
+  <li>Clarifying a side command creates a temporary conversational segment, not necessarily a new attended workflow.</li>
+  <li>The assistant should restore the previous activity context after interruptions.</li>
+  <li>Proactive interventions should be rare, valuable, and preferably timed at task boundaries.</li>
+  <li>Activities should be represented by goals, state, dependencies, resources and timing, not merely by verbs or app screens.</li>
+</ol>
+
+<style>
+.implication-quote {
+  border-left: 3px solid var(--accent);
+  background: var(--bg-2);
+  border-radius: 0 10px 10px 0;
+  padding: 0.7rem 1rem;
+  font-size: 1rem;
+  line-height: 1.5;
+  color: var(--ink);
+}
+.implications {
+  list-style: none;
+  padding: 0;
+  counter-reset: imp;
+}
+.implications li {
+  counter-increment: imp;
+  position: relative;
+  padding-left: 1.8rem;
+  margin: 0;
+  line-height: 1.45;
+}
+.implications li::before {
+  content: counter(imp);
+  position: absolute;
+  left: 0;
+  font-family: var(--mono);
+  font-weight: 800;
+  color: var(--accent);
+}
+</style>
+
+<!--
+Appendix, for Q&A. The synthesis from the reading list.
+The big one: the user's activity world is the primary object, not the chat transcript. That's why each flow keeps its own context object and the registry tracks which one holds attention.
 -->

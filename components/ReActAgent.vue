@@ -324,6 +324,16 @@ function edgeState(e: Edge) {
 
     <!-- harness loop: flowchart (stage 14) -->
     <g class="swap flow" :class="{ on: harnessView }">
+      <rect x="395" y="36" width="150" height="40" rx="20" class="fl start" />
+      <text x="470" y="61" class="fl-label">Question from App</text>
+      <line
+        x1="395"
+        y1="56"
+        x2="369"
+        y2="56"
+        class="fl-arrow ret"
+        marker-end="url(#ra-ret)"
+      />
       <rect x="195" y="36" width="170" height="40" rx="8" class="fl call" />
       <text x="280" y="61" class="fl-label">Call model</text>
       <line
@@ -385,7 +395,7 @@ function edgeState(e: Edge) {
         marker-end="url(#ra-ret)"
       />
       <text x="358" y="181" class="fl-yn">No</text>
-      <rect x="395" y="320" width="150" height="44" rx="8" class="fl final" />
+      <rect x="395" y="320" width="150" height="44" rx="22" class="fl final" />
       <text x="470" y="347" class="fl-label">Return response</text>
     </g>
 
@@ -595,6 +605,10 @@ function edgeState(e: Edge) {
   stroke-width: 1.8;
 }
 .fl.call {
+  fill: #16303f;
+  stroke: var(--info);
+}
+.fl.start {
   fill: #16303f;
   stroke: var(--info);
 }

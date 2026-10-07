@@ -124,7 +124,11 @@ const agent: (Say | null)[] = [
   { phase: "act", lines: ['addShoppingListItem("carrots")'], mono: true },
   {
     phase: "obs",
-    lines: ["Two matching products in the", "user's favourites."],
+    lines: [
+      "Two matching products in the",
+      "user's favourites: Carrots 1kg",
+      "and Baby Carrots 500g.",
+    ],
   },
   {
     phase: "reason",
@@ -133,8 +137,9 @@ const agent: (Say | null)[] = [
   {
     phase: "final",
     lines: [
-      '"There are two carrots in your',
-      'favourites. Which should I add?"',
+      '"Two carrots in your favourites:',
+      "Carrots 1kg and Baby Carrots",
+      '500g. Which should I add?"',
     ],
   },
   null,
@@ -191,7 +196,7 @@ const captions = [
   "Act: the user asks the in-app agent. That's the trigger for the agent's loop.",
   "The agent reasons: it knows which of the app's tools fits the request.",
   "The agent acts: it calls one of the app's own tools.",
-  "The agent observes: two products match.",
+  "The agent observes: two products match, regular carrots and baby carrots.",
   "The agent reasons: it can't know which one the user wants, so it doesn't guess.",
   "Finish: the agent can't go on without the user, so it asks.",
   "Observe: the agent's question becomes an observation in the user's loop.",
