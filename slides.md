@@ -233,7 +233,7 @@ clicks: 7
     </div>
     <div v-click="2" class="solution-item">
       <strong>Intent Tools</strong> <span class="chip">P1</span>
-      <div class="dim">Functions in the app, annotated to make them available to the agent.  Can be available at all times <em> - add product to cart - </em> or only in the context of a particular flow <em> - cooking step complete</em></div>
+      <div class="dim">Functions in the app, annotated to make them available to the agent.  Can be global <em> - add product to cart - </em> or only in the context of a particular flow <em> - cooking step complete</em></div>
     </div>
     <div v-click="3" class="solution-item">
       <strong>Intent Flows</strong> <span class="chip">P1</span> <span class="chip">P2</span>
@@ -242,18 +242,18 @@ clicks: 7
   </div>
   <div class="card">
     <div class="kicker">App code</div>
-    <div class="text-xl font-700 mt-1">Agent Enhanced App</div>
+    <div class="text-xl font-700 mt-1">Recipes4Me App</div>
     <div v-click="4" class="solution-item">
       <strong>An assistant class per area of expertise</strong> <span class="chip">P3</span>
       <div class="dim">A bit like skills but coded deterministically <em>- shopping, meal planning, cooking</em>.</div>
     </div>
     <div v-click="5" class="solution-item">
       <strong>Annotate public methods as Intent Tools</strong> <span class="chip">P1</span>
-      <div class="dim">Actions that should be global <em>- addItemToCart</em></div>
+      <div class="dim">Global and non global actions <em>- addItemToCart, stepComplete</em></div>
     </div>
     <div v-click="6" class="solution-item">
       <strong>Optionally implement IntentFlow</strong> <span class="chip">P2</span> <span class="chip">P3</span>
-      <div class="dim">State plus orchestration <em>- currentStep, requiredFields</em></div>
+      <div class="dim">State plus orchestration <em>- step by step, fill all fields</em></div>
     </div>
     <div v-click="7" class="solution-item">
       <strong>Use the app's state and routing</strong> <span class="chip">P4</span>
@@ -294,23 +294,13 @@ class: dense
 
 ````md magic-move {lines: true}
 ```dart
-// shopping_list_assistant.dart - you write this
+// shopping_list_assistant.dart
 @IntentTool(
   description: 'Add an item to the shopping list', 
   isGlobal: true,
 )
 Future<IntentResult> addShoppingListItem(
   @Param('The item to add') String item,
-) async {
-  ...
-}
-
-@IntentTool(
-  description: 'Add a specific offered product to the cart by its id',
-  isGlobal: false,
-)
-Future<IntentResult> addProductToCartById(
-  @Param('The tm_product_id of the chosen product') int tmProductId,
 ) async {
   ...
 }
