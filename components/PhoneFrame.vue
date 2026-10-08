@@ -1,13 +1,13 @@
 <script setup lang="ts">
-import { onSlideLeave, useSlideContext } from '@slidev/client'
+import { useIsSlideActive, useSlideContext } from '@slidev/client'
 import { ref, watch } from 'vue'
 
 // A phone bezel around a screenshot or a screen recording.
 // A video sets the bezel's aspect ratio from its own dimensions, so it is never cropped.
 // Without `sound` a video is a silent background loop. With `sound` it waits at the start
 // behind a play icon and plays with audio on the slide's next click (`playAt`, default 1),
-// so the slide needs `clicks` set to at least that. Stepping back before `playAt` rewinds
-// it, and leaving the slide pauses it. Clicks are shared between windows, so presenter mode
+// so the slide needs `clicks` set to at least that. Stepping back before `playAt` or leaving
+// the slide stops and rewinds it. Clicks are shared between windows, so presenter mode
 // can drive it. Audio only plays in the audience view, so presenter mode doesn't double it up.
 const props = withDefaults(
   defineProps<{
@@ -34,17 +34,23 @@ function onVideoMetadata(e: Event) {
 }
 
 if (props.video && props.sound) {
+  const active = useIsSlideActive()
+  // Slidev reports a passed slide as fully clicked, so `reached` alone would start the video
+  // while skipping over this slide or arriving back on it. Only a click on the slide itself
+  // starts it: the slide was already active and `reached` flipped on.
   watch(
-    () => $clicks.value >= props.playAt,
-    (play) => {
+    [active, () => $clicks.value >= props.playAt] as const,
+    ([isActive, reached], [wasActive, wasReached]) => {
       const v = videoEl.value
       if (!v)
         return
-      if (!play) {
+      if (!isActive || !reached) {
         v.pause()
         v.currentTime = 0
         return
       }
+      if (!wasActive || wasReached)
+        return
       v.muted = !audible
       // Unmuted playback is blocked until this window has had a user gesture: fall back to muted.
       v.play().catch(() => {
@@ -53,7 +59,6 @@ if (props.video && props.sound) {
       })
     },
   )
-  onSlideLeave(() => videoEl.value?.pause())
 }
 </script>
 
