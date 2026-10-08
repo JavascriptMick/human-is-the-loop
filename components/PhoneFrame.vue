@@ -1,26 +1,30 @@
 <script setup lang="ts">
-import { onSlideEnter, onSlideLeave, useSlideContext } from '@slidev/client'
-import { ref } from 'vue'
+import { onSlideLeave, useSlideContext } from '@slidev/client'
+import { ref, watch } from 'vue'
 
 // A phone bezel around a screenshot or a screen recording.
 // A video sets the bezel's aspect ratio from its own dimensions, so it is never cropped.
-// Without `sound` a video is a silent background loop. With `sound` it plays once
-// with audio from the start each time the slide is entered, and pauses on leave.
-// Audio only plays in the audience view, so presenter mode doesn't double it up.
+// Without `sound` a video is a silent background loop. With `sound` it waits at the start
+// behind a play icon and plays with audio on the slide's next click (`playAt`, default 1),
+// so the slide needs `clicks` set to at least that. Stepping back before `playAt` rewinds
+// it, and leaving the slide pauses it. Clicks are shared between windows, so presenter mode
+// can drive it. Audio only plays in the audience view, so presenter mode doesn't double it up.
 const props = withDefaults(
   defineProps<{
     src: string
     video?: boolean
     sound?: boolean
+    playAt?: number
     width?: number
     caption?: string
   }>(),
-  { video: false, sound: false, width: 220 },
+  { video: false, sound: false, playAt: 1, width: 220 },
 )
 
-const { $renderContext } = useSlideContext()
+const { $clicks, $renderContext } = useSlideContext()
 const videoEl = ref<HTMLVideoElement>()
 const aspectRatio = ref('1080 / 2400')
+const playing = ref(false)
 const audible = props.sound && $renderContext.value === 'slide'
 
 function onVideoMetadata(e: Event) {
@@ -30,18 +34,25 @@ function onVideoMetadata(e: Event) {
 }
 
 if (props.video && props.sound) {
-  onSlideEnter(() => {
-    const v = videoEl.value
-    if (!v)
-      return
-    v.currentTime = 0
-    v.muted = !audible
-    // Unmuted playback is blocked until the page has had a user gesture: fall back to muted.
-    v.play().catch(() => {
-      v.muted = true
-      v.play().catch(() => {})
-    })
-  })
+  watch(
+    () => $clicks.value >= props.playAt,
+    (play) => {
+      const v = videoEl.value
+      if (!v)
+        return
+      if (!play) {
+        v.pause()
+        v.currentTime = 0
+        return
+      }
+      v.muted = !audible
+      // Unmuted playback is blocked until this window has had a user gesture: fall back to muted.
+      v.play().catch(() => {
+        v.muted = true
+        v.play().catch(() => {})
+      })
+    },
+  )
   onSlideLeave(() => videoEl.value?.pause())
 }
 </script>
@@ -49,15 +60,21 @@ if (props.video && props.sound) {
 <template>
   <figure class="phone-wrap" :style="{ width: `${props.width}px` }">
     <div class="phone" :style="{ aspectRatio }">
-      <video
-        v-if="props.video && props.sound"
-        ref="videoEl"
-        :src="props.src"
-        muted
-        playsinline
-        preload="auto"
-        @loadedmetadata="onVideoMetadata"
-      />
+      <template v-if="props.video && props.sound">
+        <video
+          ref="videoEl"
+          :src="props.src"
+          muted
+          playsinline
+          preload="auto"
+          @loadedmetadata="onVideoMetadata"
+          @play="playing = true"
+          @pause="playing = false"
+        />
+        <div v-if="!playing" class="play" aria-hidden="true">
+          <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z" /></svg>
+        </div>
+      </template>
       <video v-else-if="props.video" :src="props.src" autoplay muted loop playsinline @loadedmetadata="onVideoMetadata" />
       <img v-else :src="props.src" alt="" />
     </div>
@@ -80,6 +97,7 @@ if (props.video && props.sound) {
   overflow: hidden;
   box-shadow: 0 20px 50px rgba(0, 0, 0, 0.55);
   background: #000;
+  position: relative;
 }
 .phone img,
 .phone video {
@@ -88,6 +106,26 @@ if (props.video && props.sound) {
   object-fit: cover;
   object-position: top;
   display: block;
+}
+.play {
+  position: absolute;
+  inset: 0;
+  margin: auto;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  background: rgba(0, 0, 0, 0.55);
+  color: #fff;
+  display: grid;
+  place-items: center;
+  pointer-events: none;
+}
+.play svg {
+  width: 26px;
+  height: 26px;
+  margin-left: 3px;
+  fill: currentColor;
 }
 figcaption {
   margin-top: 0.5rem;

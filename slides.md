@@ -200,6 +200,7 @@ clicks: 4
 
 ---
 layout: center
+clicks: 1
 ---
 
 <div class="grid grid-cols-[auto_1fr] gap-12 items-center">
