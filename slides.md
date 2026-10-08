@@ -358,7 +358,7 @@ class: dense
 
 <div class="grid grid-cols-[1fr_1fr] gap-4 mt-2">
 
-```dart {all|4-8|10-16|18-22}
+```dart {all|4-8|10-16|18-22|all}
 class CookingAssistant implements IntentFlow {
   CookingAssistantContext? _context; // null = not cooking
 
@@ -383,7 +383,7 @@ class CookingAssistant implements IntentFlow {
       'on ${_context!.current_step.name}.';
 ```
 
-```dart {all|1-3|5-7|9-12}
+```dart {all|1-3|5-7|9-12|all}
   // "back to cooking": pick up where we left off
   @override
   IntentResult resumeThisFlow() => _orchestrate(_context!, []);
@@ -419,7 +419,7 @@ class: dense
 # Intent Flow
 
 ```dart {all|1-9|11-20|8,19}
-// global tool initiates the flow
+// This Intent Tool initiates the orchestrated flow.  It is always available (isGlobal: true)
 @IntentTool(description: 'Start cooking a new recipe', isGlobal: true)
 Future<IntentResult> startCooking(@Param('The Recipe Id to cook') int recipe_id) async {
   final recipe = await _apiClient.recipes
@@ -429,8 +429,8 @@ Future<IntentResult> startCooking(@Param('The Recipe Id to cook') int recipe_id)
   return _orchestrate(_context!, []);
 }
 
-// flow tool: only offered when the orchestrator arms it
-@IntentTool(description: 'Step is complete')
+// This Intent Tool is only 'armed' by the orchestrator when appropriate (isGlobal: false)
+@IntentTool(description: 'Step is complete', isGlobal: false)
 IntentResult stepComplete() {
   final ctx = _context!;
   if (ctx.go_to_next_step() == null) {
@@ -456,22 +456,23 @@ class: dense
 
 # Intent Flow
 
-```dart {all|2-4|6-13|15-23|25-28}
+```dart {all|2-5|6-14|15-24|26-29|all}
 IntentResult _orchestrate(CookingAssistantContext ctx, List<String> messages) {
-  // show the user the cooking assistant screen while orchestrating
+  // Navigate the user to the cooking assistant screen
   final path = appRouter.routerDelegate.currentConfiguration.uri.path;
   if (path != '/recipes/assistant') appRouter.go('/recipes/assistant');
 
+  // enforce a 'pre cook' state to prompt for ingredients
   if (ctx.is_in_pre_cook) {
-    orchestratedStepIndex.value = -1; // signal: scroll to the ingredients
+    orchestratedStepIndex.value = -1; // signal UI: scroll to the ingredients
     return IntentResult.withNextTools(
-      [...messages, "Let's cook ${ctx.recipe_name}.",
-       'Would you like me to read out the ingredients, or are you ready to cook?'],
+      [...messages, "Let's cook ${ctx.recipe_name}.", 'Would you like me to read out the ingredients, or are you ready to cook?'],
       ['readIngredients', 'readyToCook'],
     );
   }
 
-  orchestratedStepIndex.value = ctx.current_step_index; // signal: highlight the step
+  // Highlight current step and handle timer set/reset
+  orchestratedStepIndex.value = ctx.current_step_index; // signal UI: scroll to the correct step
   final step = ctx.current_step;
   if (!identical(_timerStep, step)) {
     _stepTimer?.cancel(); // the previous step's timer is obsolete
@@ -481,10 +482,8 @@ IntentResult _orchestrate(CookingAssistantContext ctx, List<String> messages) {
     }
   }
 
-  return IntentResult.withNextTools(
-    [...messages, 'Next step.', step.prompt],
-    ['stepComplete'],
-  );
+  // Return a step prompt and a single Intent Tool
+  return IntentResult.withNextTools([...messages, 'Next step.', step.prompt], ['stepComplete']);
 }
 ```
 
