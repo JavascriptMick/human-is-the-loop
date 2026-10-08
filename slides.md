@@ -49,23 +49,19 @@ Embedding user first, voice enabled agents into mobile with Flutter and Gemini
 <div class="grid grid-cols-3 gap-5 mt-10">
   <div class="card">
     <div class="kicker">The Problem</div>
-    <div class="text-xl font-700 mt-2">Agents loop without us</div>
-    <div class="mt-2 dim">Autonomous agents only involve the user at the start and the end</div>
+    <div class="text-xl font-700 mt-2">HITL is not enough</div>
+    <div class="mt-2 dim">Autonomous agents have a trust problem, Human In The Loop doesn't fix it</div>
   </div>
   <div class="card">
     <div class="kicker">The Principles</div>
-    <div class="text-xl font-700 mt-2">Two loops, four principles</div>
-    <div class="mt-2 dim">How we can build agents that support users and reduce cognitive load</div>
+    <div class="text-xl font-700 mt-2">Focus on the User</div>
+    <div class="mt-2 dim">Build expert agents that respond to user intent and don't use magic</div>
   </div>
   <div class="card">
-    <div class="kicker">The Solution</div>
+    <div class="kicker">An Example Solution</div>
     <div class="text-xl font-700 mt-2">Flutter · Signals · Gemini</div>
-    <div class="mt-2 dim">A demo and real Dart from a shipping app: intent tools, flows and orchestration</div>
+    <div class="mt-2 dim">A custom in-app harness that supports voice, tools and orchestrated flows</div>
   </div>
-</div>
-
-<div class="mt-10 text-center text-lg">
-  You'll leave with a flexible pattern that works for <strong class="accent">real</strong> users.
 </div>
 
 <!--
@@ -76,9 +72,9 @@ Embedding user first, voice enabled agents into mobile with Flutter and Gemini
 clicks: 3
 ---
 
-<div class="kicker">Public perception</div>
+<div class="kicker">Agents have a trust problem</div>
 
-# Autonomous agents are out of control
+# Agents in the Mainstream Media
 
 <div class="mt-6 w-4/5 mx-auto">
   <HeadlineStack :stage="$clicks" />
@@ -109,8 +105,8 @@ clicks: 4
     <div class="mt-3 text-xs dim">IBM, <a href="https://www.ibm.com/think/topics/human-in-the-loop" target="_blank">ibm.com/think/topics/human-in-the-loop</a></div>
   </div>
   <div class="flex flex-col gap-4">
-    <div v-click="1" class="reaction">"I thought I was getting a smart assistant, not a sassy intern"</div>
-    <div v-click="2" class="reaction">"Do I need to guardrail everything?"</div>
+    <div v-click="1" class="reaction">"Do I need to guardrail everything inbetween my check points?"</div>
+    <div v-click="2" class="reaction">"I want a smart assistant, not a reckless intern"</div>
     <div v-click="3" class="reaction">"The agent does the interesting stuff, checking work is boring"</div>
   </div>
 </div>
@@ -229,7 +225,7 @@ clicks: 7
 
 <div class="grid grid-cols-2 gap-6 mt-4 text-sm">
   <div class="card">
-    <div class="kicker">Package</div>
+    <div class="kicker">Custom Harness Package</div>
     <div class="text-xl font-700 mt-1">Flutter Agent Framework</div>
     <div v-click="1" class="solution-item">
       <strong>Voice capable</strong>
@@ -237,15 +233,15 @@ clicks: 7
     </div>
     <div v-click="2" class="solution-item">
       <strong>Intent Tools</strong> <span class="chip">P1</span>
-      <div class="dim">Global tools, available at all times. A bit like main menu actions: quick actions, or the way into a longer flow <em>- add an item to the cart, start meal planning.</em></div>
+      <div class="dim">Functions in the app, annotated to make them available to the agent.  Can be available at all times <em> - add product to cart - </em> or only in the context of a particular flow <em> - cooking step complete</em></div>
     </div>
     <div v-click="3" class="solution-item">
       <strong>Intent Flows</strong> <span class="chip">P1</span> <span class="chip">P2</span>
-      <div class="dim">Multi-step, multi-conversation, stateful tasks. A bit like wizards. Switch in and out of the foreground and keep their state. <em>cook a recipe, plan my weekly meals.</em></div>
+      <div class="dim">Mirror users intent.  Orchestrated, multi-conversation & stateful. Can be switched in and out of the foreground while keeping their state. <em> - cook a recipe, plan my weekly meals.</em></div>
     </div>
   </div>
   <div class="card">
-    <div class="kicker">Your code</div>
+    <div class="kicker">App code</div>
     <div class="text-xl font-700 mt-1">Agent Enhanced App</div>
     <div v-click="4" class="solution-item">
       <strong>An assistant class per area of expertise</strong> <span class="chip">P3</span>
@@ -260,7 +256,7 @@ clicks: 7
       <div class="dim">State plus orchestration <em>- currentStep, requiredFields</em></div>
     </div>
     <div v-click="7" class="solution-item">
-      <strong>Use the app's stores and router</strong> <span class="chip">P4</span>
+      <strong>Use the app's state and routing</strong> <span class="chip">P4</span>
       <div class="dim">Change state the way the UI does, and take the user to the screen that shows it</div>
     </div>
   </div>
