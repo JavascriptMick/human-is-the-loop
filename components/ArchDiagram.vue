@@ -11,6 +11,7 @@ interface Box {
   h: number;
   title: string;
   lines?: string[];
+  icon?: string;
   stage: number;
   kind?: "core" | "app" | "ext" | "user";
 }
@@ -74,11 +75,13 @@ const boxes: Box[] = [
   },
   {
     id: "llm",
-    x: 420,
+    x: 385,
     y: 412,
-    w: 130,
-    h: 40,
-    title: "LLM (Gemini)",
+    w: 200,
+    h: 46,
+    title: "Gemini",
+    lines: ["gemini-2.5-flash-lite"],
+    icon: "/img/gemini-logo.svg",
     stage: 2,
     kind: "ext",
   },
@@ -232,6 +235,14 @@ const visible = (s: number) => props.stage >= s;
       >
         {{ l }}
       </text>
+      <image
+        v-if="b.icon"
+        :href="b.icon"
+        :x="b.x + b.w - 34"
+        :y="b.y + (b.h - 24) / 2"
+        width="24"
+        height="24"
+      />
     </g>
 
     <g class="legend">
