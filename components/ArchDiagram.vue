@@ -249,7 +249,7 @@ const visible = (s: number) => props.stage >= s;
       <rect x="10" y="420" width="12" height="12" rx="3" class="lg-core" />
       <text x="28" y="430">framework</text>
       <rect x="110" y="420" width="12" height="12" rx="3" class="lg-app" />
-      <text x="128" y="430">your app</text>
+      <text x="128" y="430">app code</text>
     </g>
   </svg>
 </template>
