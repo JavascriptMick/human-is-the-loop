@@ -183,7 +183,7 @@ clicks: 4
 </div>
 
 <div class="mt-6 text-center text-xs dim">
-  For a deeper dive into HCI research on multitasking, interruption and mixed-initiative interaction. See the <Link to="18">appendix</Link>.
+  For a deeper dive into HCI research on multitasking, interruption and mixed-initiative interaction. See the <Link to="19">appendix</Link>.
 </div>
 
 <!--
@@ -542,6 +542,39 @@ clicks: 30
 [click] It observes: there are two recipes.
 [click] It reasons: it's not clear which one to add, so it doesn't guess. Better ask.
 [click] And it finishes with a question: "I found carrot soup and carrot pie." The user changed context, and the agent followed. The human is the loop.
+-->
+
+---
+clicks: 3
+---
+
+<div class="kicker">Business Focus</div>
+
+# How to convince your boss
+
+<div class="grid grid-cols-[1fr_auto_1fr] gap-x-6 gap-y-4 items-center mt-6">
+  <div class="kicker text-center">B2C - Consumer apps</div>
+  <div></div>
+  <div class="kicker text-center">B2B - Enterprise systems</div>
+
+  <div v-click="1" class="card dim">Add the agent to the app and brand you already have, not a separate AI product.</div>
+  <div v-click="1" class="pill">Reuse</div>
+  <div v-click="1" class="card dim">The agent drives your existing systems and interfaces instead of replacing them.</div>
+
+  <div v-click="2" class="card dim">The AI supports users concerns and focus, they stay in control.</div>
+  <div v-click="2" class="pill">Trust</div>
+  <div v-click="2" class="card dim">You really are force multiplying existing employees, not replacing them.</div>
+
+  <div v-click="3" class="card dim">Users find features they never knew were there, by doing them with the agent.</div>
+  <div v-click="3" class="pill">Discovery</div>
+  <div v-click="3" class="card dim">Shorten the learning curve for new employees, the agent helps them learn systems by example.</div>
+</div>
+
+<!--
+[1:00] So how do you sell this inside a business? There are two main cases: consumer apps and enterprise systems.
+[click] Reuse. For a consumer app, you add the agent to the app and brand you already have, rather than launching a separate AI product. For the enterprise, the agent drives your existing systems and interfaces instead of replacing them.
+[click] Trust. Consumers are wary of AI, but there's no magic here: they watch the agent drive the screens they know, and they stay in control. In the enterprise it overcomes AI resistance, because you really are force multiplying existing employees, not replacing them.
+[click] Discovery. Consumers discover features they never knew were there, because the agent shows them by doing it with them. New employees get up to speed faster, because the agent trains them on the systems by example.
 -->
 
 ---

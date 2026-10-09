@@ -109,6 +109,19 @@
   color: var(--ink-dim);
 }
 
+/* A large theme label, e.g. the central column of a two-sided comparison. */
+.pill {
+  justify-self: center;
+  font-family: var(--mono);
+  font-size: 0.9rem;
+  font-weight: 600;
+  padding: 0.35em 1.1em;
+  border-radius: 999px;
+  border: 1px solid var(--accent-dim);
+  background: var(--bg-2);
+  color: var(--accent);
+}
+
 .card {
   background: linear-gradient(180deg, var(--surface) 0%, var(--bg-2) 100%);
   border: 1px solid var(--border);
