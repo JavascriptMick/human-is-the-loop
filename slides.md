@@ -36,6 +36,10 @@ Embedding user first, voice enabled agents into mobile with Flutter and Gemini
   </div>
 </div>
 
+<div class="mt-6 flex justify-center">
+  <QrCode url="https://github.com/JavascriptMick/human-is-the-loop" :size="90" caption="presentation & contact info" />
+</div>
+
 <div class="abs-bl m-3 text-[7px] opacity-40">Photo: Karthik Balakrishnan / Unsplash</div>
 
 <!--
@@ -607,7 +611,7 @@ class: text-center
 <div class="dim mt-4">Human <span class="accent">IS</span> the loop</div>
 
 <div class="mt-10 flex justify-center">
-  <QrCode url="https://github.com/JavascriptMick/human-is-the-loop" :size="140" />
+  <QrCode url="https://github.com/JavascriptMick/human-is-the-loop" :size="140" caption="presentation & contact info" />
 </div>
 
 <!--
