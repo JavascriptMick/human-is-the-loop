@@ -10,9 +10,16 @@ A talk by Michael Dausmann, presented at Google DevFest 2026.
 
 ## Contact
 
+<img src="public/img/michael-headshot.jpg" alt="Michael Dausmann" width="120" align="center" hspace="16" />
+
+**Michael Dausmann**<br/>
+Founder and CTO - Recipes4Me
+
 - LinkedIn: [linkedin.com/in/mdausmann](https://www.linkedin.com/in/mdausmann/)
 - GitHub: [github.com/JavascriptMick](https://github.com/JavascriptMick)
 - Business: [recipes4me.com.au](https://recipes4me.com.au/)
+
+<br/>
 
 ## This presentation is built with [Slidev](https://github.com/slidevjs/slidev)!
 
